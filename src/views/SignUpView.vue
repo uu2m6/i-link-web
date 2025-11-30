@@ -31,11 +31,6 @@
         </div>
 
         <div class="input-group">
-          <label for="phone">휴대전화번호</label>
-          <input type="tel" id="phone" v-model="phone" placeholder="010-1234-5678" />
-        </div>
-
-        <div class="input-group">
           <label for="password">비밀번호 <span class="hint-text">(영문, 숫자 포함 6자 이상)</span></label>
           <input 
             type="password" 
@@ -107,16 +102,15 @@
             <label>거주 지역</label>
             <div class="input-group-row">
               <select v-model="parentInfo.selectedProvince" @change="onParentProvinceChange">
-                <option value="" disabled>시/도 선택</option>
+                <option value="" disabled>시/도</option>
                 <option v-for="province in provinces" :key="province" :value="province">{{ province }}</option>
               </select>
               <select v-model="parentInfo.selectedDistrict" :disabled="!parentInfo.selectedProvince">
-                <option value="" disabled>구/군 선택</option>
+                <option value="" disabled>구/군</option>
                 <option v-for="district in districtsForParent" :key="district" :value="district">{{ district }}</option>
               </select>
             </div>
-            <input type="text" v-model="parentInfo.detailAddress" placeholder="상세 주소 (선택)" style="margin-top: 10px;">
-          </div>
+            </div>
 
           <div class="input-group">
             <label for="parentWage">희망 시급 <span class="hint-text">(2025년 최저: 10,030원)</span></label>
@@ -228,7 +222,7 @@
              <p class="terms-title">제1조 (수집하는 개인정보 항목)</p>
             <p>회사는 회원가입, 상담, 서비스 신청 등을 위해 아래와 같은 개인정보를 수집하고 있습니다.</p>
             <ul class="terms-list">
-              <li><strong>1. 공통 필수항목</strong><br>이름, 이메일(아이디), 비밀번호, 휴대전화번호, 주소</li>
+              <li><strong>1. 공통 필수항목</strong><br>이름, 이메일(아이디), 비밀번호, 주소</li>
               </ul>
             </div>
           <div class="agreement-section">
@@ -257,11 +251,12 @@ export default {
   data() {
     return {
       isSubmitting: false,
-      // [추가됨] 이름, 연락처 변수
-      name: '',
-      phone: '',
       
+      // [수정] 백엔드 UserCreate 모델 필수 항목: name, email, password
+      name: '', // 사용자가 입력
       identifier: '',
+      // phone: '', // 백엔드 모델에 없으므로 삭제
+      
       userType: 'parent',
       password: '',
       confirmPassword: '',
@@ -274,7 +269,7 @@ export default {
         children: [{ birthYear: '', age: '', gender: '' }],
         selectedProvince: '',
         selectedDistrict: '',
-        detailAddress: '',
+        detailAddress: '', 
         wage: null,
         wageNegotiable: false,
         careTypes: [],
@@ -288,7 +283,7 @@ export default {
         activities: [],
         selectedRegions: [],
         wage: null,
-        paymentCycles: ['월급'], // 기본값 예시
+        paymentCycles: ['월급'], 
         cctvAgree: '',
         notes: ''
       },
@@ -382,10 +377,9 @@ export default {
     },
 
     validateInputs() {
-      // [수정] 필수 필드에 이름, 연락처 추가
+      // [수정] 필수 필드: 이름 포함
       if (!this.name) return false;
       if (!this.identifier) return false;
-      if (!this.phone) return false;
       if (!this.password) return false;
       if (!this.confirmPassword) return false;
 
@@ -409,11 +403,12 @@ export default {
       return true;
     },
     
+    // [최종] 백엔드 UserCreate 모델 매핑
     async signUp() {
       if (this.isSubmitting) return;
 
       if (!this.validateInputs()) {
-        alert('모든 필수 정보(이름, 연락처 등)를 입력했는지 확인해주세요.');
+        alert('이름, 이메일 등 필수 정보를 모두 입력했는지 확인해주세요.');
         return;
       }
       const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).+$/;
@@ -422,52 +417,61 @@ export default {
         return;
       }
       if (this.password !== this.confirmPassword) {
-        this.passwordError = '비밀번호가 일치하지 않습니다. 다시 확인해주세요.';
+        this.passwordError = '비밀번호가 일치하지 않습니다.';
         this.confirmPassword = ''; 
         return;
       }
       if (!this.agreed) {
-        this.$emit('show-modal', { 
-          message: '개인정보 활용에 동의해야 합니다.',
-          onConfirm: () => {}
-        });
+        alert('개인정보 활용에 동의해야 합니다.');
         return;
       }
       
-      if (this.userType === 'teacher') {
-        this.teacherInfo.certifications = this.teacherInfo.certifications.filter(c => c.trim() !== '');
-      }
-
       this.isSubmitting = true;
 
       try {
-        // [중요] 시급 숫자 변환
         const numericWage = this.userType === 'parent' 
           ? Number(String(this.parentInfo.wage).replace(/,/g, '')) 
           : Number(String(this.teacherInfo.wage).replace(/,/g, ''));
 
-        // [중요] 주소 합치기 (시/도 + 구/군 + 상세)
+        // [주소 합치기] 시/도 + 구/군
         let fullAddress = '';
         if (this.userType === 'parent') {
-          fullAddress = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict} ${this.parentInfo.detailAddress}`.trim();
+          fullAddress = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict}`.trim();
         } else {
-          // 선생님은 활동지역이 여러 개라 주소가 애매하지만, 본인 주소 칸을 따로 만들지 않았으므로
-          // 일단 첫 번째 희망 지역을 주소로 보내거나 빈 값으로 둡니다.
-          // (여기서는 학부모와 같은 방식으로 입력받지 않았으므로 빈 문자열 또는 별도 입력 필요)
-          fullAddress = '선생님 주소 미입력'; 
+          // 선생님은 희망 지역 중 첫 번째 사용 (백엔드 호환용)
+          fullAddress = this.teacherInfo.selectedRegions[0] || '주소 미입력';
         }
 
+        const firstChild = this.parentInfo.children[0] || {};
+
+        // [데이터 매핑] UserCreate 모델 필드와 일치
         const formData = {
+          name: this.name,
           email: this.identifier,
-          username: this.identifier,
-          password: this.password,
-          name: this.name,   // [추가됨] 이름 전송
-          phone: this.phone, // [추가됨] 연락처 전송
-          address: fullAddress, // [추가됨] 합친 주소 전송
-          user_type: this.userType,
-          wage: numericWage,
+          password1: this.password,
+          password2: this.confirmPassword,
+          role: this.userType,
+          address: fullAddress, // 합친 주소 문자열 전송
+
+          // 선택사항
+          children: this.userType === 'parent' ? this.parentInfo.numChildren : null,
+          child_year: this.userType === 'parent' ? String(firstChild.birthYear) : null,
+          child_age: this.userType === 'parent' ? Number(firstChild.age) : null,
+          child_gender: this.userType === 'parent' ? firstChild.gender : null,
+          warning: this.userType === 'parent' ? this.parentInfo.notes : null,
           
-          ...(this.userType === 'parent' ? this.parentInfo : this.teacherInfo)
+          hope_pay: numericWage,
+          
+          activities: this.userType === 'teacher' ? this.teacherInfo.activities : null,
+          hope_regions: this.userType === 'teacher' ? this.teacherInfo.selectedRegions : null,
+          pay_period: this.userType === 'teacher' ? this.teacherInfo.paymentCycles : null,
+          cctv_agree: this.userType === 'teacher' ? (this.teacherInfo.cctvAgree === 'agree') : null,
+          info_agree: this.agreed,
+          
+          career: this.userType === 'teacher' ? this.teacherInfo.experienceYear : null,
+          career_detail: this.userType === 'teacher' ? this.teacherInfo.experienceDesc : null,
+          certifications: this.userType === 'teacher' ? this.teacherInfo.certifications.filter(c => c.trim() !== '') : null,
+          introduction: this.userType === 'teacher' ? this.teacherInfo.notes : null
         };
 
         const response = await axios.post('/api/auth/signup', formData);
@@ -481,11 +485,17 @@ export default {
 
       } catch (error) {
         if (error.response) {
-          console.error('서버 에러:', error.response.data);
-          const errorMsg = error.response.data.detail 
-            ? (typeof error.response.data.detail === 'object' ? JSON.stringify(error.response.data.detail) : error.response.data.detail)
-            : '회원가입 중 오류가 발생했습니다.';
-          alert('가입 실패:\n' + errorMsg);
+          console.error('서버 에러 상세:', error.response.data);
+          const errorDetail = error.response.data.detail;
+          
+          let alertMsg = '';
+          if (Array.isArray(errorDetail)) {
+            alertMsg = errorDetail.map(e => `${e.loc[1]}: ${e.msg}`).join('\n');
+          } else {
+            alertMsg = errorDetail || '회원가입 중 오류가 발생했습니다.';
+          }
+          
+          alert('가입 실패:\n' + alertMsg);
         } else {
           alert('서버와 연결할 수 없습니다.');
         }
@@ -498,7 +508,7 @@ export default {
 </script>
 
 <style scoped>
-/* (기존 스타일 모두 유지) */
+/* (기존 스타일 모두 유지 - 생략 없이 그대로 사용하세요) */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .signup-card { width: 100%; max-width: 560px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }

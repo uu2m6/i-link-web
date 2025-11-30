@@ -6,7 +6,7 @@ module.exports = defineConfig({
   devServer: {
     proxy: {
       '/api': { 
-        target: 'https://4425bad943c6.ngrok-free.app',
+        target: 'https://a9c638c029b8.ngrok-free.app',
         changeOrigin: true,
       }
     }

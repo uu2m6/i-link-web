@@ -3,7 +3,6 @@
     <TheHeader />
     <main class="auth-layout">
       <div class="signup-card">
-        <form @submit.prevent="signUp">
         <div class="logo">
           <span class="logo-icon">🔗</span>
           <span class="logo-text">아이Link</span>
@@ -132,7 +131,7 @@
           </div>
 
           <div class="input-group">
-            <label for="parentNotes">선생님이 알아야 할 내용이 있나요?</label>
+            <label for="parentNotes">선생님이 알아야 할 내용이 있나요? (선택)</label>
             <textarea id="parentNotes" v-model="parentInfo.notes" placeholder="아이 성격, 특이사항, 알레르기 유무 등"></textarea>
           </div>
         </div>
@@ -162,7 +161,7 @@
           </div>
 
           <div class="input-group">
-            <label>보유 자격증 <span class="hint-text"></span></label>
+            <label>보유 자격증 <span class="hint-text">(선택)</span></label>
             <div 
               v-for="(cert, index) in teacherInfo.certifications" 
               :key="index" 
@@ -236,7 +235,7 @@
           </div>
 
           <div class="input-group">
-            <label for="teacherNotes">자기소개 및 강점</label>
+            <label for="teacherNotes">자기소개 및 강점 (선택)</label>
             <textarea id="teacherNotes" v-model="teacherInfo.notes" placeholder="아이들에게 어떤 선생님이 되어주고 싶은지, 본인의 강점 등을 자유롭게 작성해주세요."></textarea>
           </div>
         </div>
@@ -294,13 +293,13 @@
         >
           {{ isSubmitting ? '가입 처리 중...' : '가입하기' }}
         </BaseButton>
-      </form> </div>
+      </div>
     </main>
   </div>
 </template>
 
 <script>
-import axios from 'axios'; // [1] Axios 라이브러리 import
+import axios from 'axios'; 
 import BaseButton from '../components/BaseButton.vue';
 import TheHeader from '../components/TheHeader.vue';
 import { regionData } from '../data/regions.js';
@@ -335,7 +334,6 @@ export default {
         experienceYear: '', 
         experienceDesc: '',
         certifications: [],
-        
         activities: [],
         selectedRegions: [],
         wage: null,
@@ -455,7 +453,6 @@ export default {
       else if (this.userType === 'teacher') {
         if (!this.teacherInfo.experienceYear) return false;
         if (!this.teacherInfo.experienceDesc) return false;
-        
         if (this.teacherInfo.activities.length === 0) return false;
         if (this.teacherInfo.selectedRegions.length === 0) return false;
         if (!this.teacherInfo.wage) return false;
@@ -465,6 +462,7 @@ export default {
       return true;
     },
     
+    // [중요 수정] 실제 백엔드 통신을 위한 signUp 함수
     async signUp() {
       if (this.isSubmitting) return;
 
@@ -497,21 +495,33 @@ export default {
       this.isSubmitting = true;
 
       try {
-        // [3] 서버에 보낼 데이터 포장
-        const formData = {
-          email: this.identifier,       
-          username: this.identifier,    
-          password: this.password,
-          user_type: this.userType,
-         
-          details: this.userType === 'parent' ? { ...this.parentInfo } : this.teacherInfo
-};
+        // [1] 시급 콤마 제거 및 숫자 변환 로직 (422 에러 방지 핵심!)
+        const numericWage = this.userType === 'parent' 
+          ? Number(String(this.parentInfo.wage).replace(/,/g, '')) 
+          : Number(String(this.teacherInfo.wage).replace(/,/g, ''));
 
+        // [2] 백엔드 친화적인 데이터 구조 생성
+        // 필수 필드를 최상단에, 상세 정보를 펼쳐서 보냄
+        const formData = {
+          email: this.identifier,
+          username: this.identifier,
+          password: this.password,
+          user_type: this.userType, // snake_case
+          wage: numericWage,        // Integer 타입으로 보냄
+          
+          // 상세 정보 펼치기 (Spread Operator)
+          ...(this.userType === 'parent' ? this.parentInfo : this.teacherInfo)
+        };
+
+        // [3] 안전을 위해 details 객체도 추가로 넣어둠 (백엔드 구조에 따라 둘 중 하나는 맞음)
+        formData.details = this.userType === 'parent' ? this.parentInfo : this.teacherInfo;
+
+        console.log('서버로 전송할 데이터:', formData); // 디버깅용 로그
+
+        // [4] 실제 전송
         const response = await axios.post('/api/auth/signup', formData);
 
         if (response.status === 200 || response.status === 201) {
-          console.log('서버 응답 성공:', response.data);
-          
           this.$emit('show-modal', {
             message: '회원가입 성공! 로그인 해주세요.',
             onConfirm: () => this.$router.push('/login')
@@ -519,15 +529,17 @@ export default {
         }
 
       } catch (error) {
-
-        console.error('회원가입 실패:', error);
-        
-        const errorMessage = error.response && error.response.data && error.response.data.message 
-          ? error.response.data.message 
-          : '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.';
-          
-        alert(errorMessage);
-
+        // [5] 에러 상세 분석 로그
+        if (error.response) {
+          console.error('서버 응답 에러 데이터:', error.response.data);
+          const errorMsg = error.response.data.detail 
+            ? (typeof error.response.data.detail === 'object' ? JSON.stringify(error.response.data.detail) : error.response.data.detail)
+            : '회원가입 중 오류가 발생했습니다.';
+          alert('가입 실패: ' + errorMsg);
+        } else {
+          console.error('요청 설정 에러:', error.message);
+          alert('서버와 연결할 수 없습니다.');
+        }
       } finally {
         this.isSubmitting = false;
       }
@@ -537,7 +549,7 @@ export default {
 </script>
 
 <style scoped>
-/* 기존 스타일 그대로 유지 */
+/* 기존 스타일 유지 */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .signup-card { width: 100%; max-width: 560px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }

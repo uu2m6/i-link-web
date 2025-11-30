@@ -6,7 +6,7 @@ module.exports = defineConfig({
   devServer: {
     proxy: {
       '/api': { 
-        target: 'http://localhost:8000', // 백엔드 서버 주소
+        target: 'https://1b1a8d606663.ngrok-free.app',
         changeOrigin: true,
       }
     }

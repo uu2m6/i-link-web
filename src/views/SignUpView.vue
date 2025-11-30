@@ -131,7 +131,7 @@
           </div>
 
           <div class="input-group">
-            <label for="parentNotes">선생님이 알아야 할 내용이 있나요? (선택)</label>
+            <label for="parentNotes">선생님이 알아야 할 내용이 있나요?</label>
             <textarea id="parentNotes" v-model="parentInfo.notes" placeholder="아이 성격, 특이사항, 알레르기 유무 등"></textarea>
           </div>
         </div>
@@ -161,7 +161,7 @@
           </div>
 
           <div class="input-group">
-            <label>보유 자격증 <span class="hint-text">(선택)</span></label>
+            <label>보유 자격증 <span class="hint-text"></span></label>
             <div 
               v-for="(cert, index) in teacherInfo.certifications" 
               :key="index" 
@@ -235,7 +235,7 @@
           </div>
 
           <div class="input-group">
-            <label for="teacherNotes">자기소개 및 강점 (선택)</label>
+            <label for="teacherNotes">자기소개 및 강점</label>
             <textarea id="teacherNotes" v-model="teacherInfo.notes" placeholder="아이들에게 어떤 선생님이 되어주고 싶은지, 본인의 강점 등을 자유롭게 작성해주세요."></textarea>
           </div>
         </div>

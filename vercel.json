@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://http://localhost:8000/api/$1" 
+      "destination": "https://d80c86cdf0eb.ngrok-free.app/api/$1" 
     },
     {
       "source": "/(.*)",

@@ -84,27 +84,34 @@ export default {
 
         console.log('로그인 성공:', response.data);
 
-        // [3] 응답 데이터 처리 (수정됨: token_type 제거)
-        // 사용하지 않는 token_type은 변수에서 뺐습니다.
         const { access_token, role, name } = response.data;
 
-        // 토큰 저장
-        localStorage.setItem('isLoggedIn', 'true');
-        if (access_token) {
-          localStorage.setItem('token', access_token);
-        }
-        
-        if (role) localStorage.setItem('userRole', role);
+        // [3] ★ 핵심 수정: 저장소 에러 방지용 try-catch 추가
+        try {
+          localStorage.setItem('isLoggedIn', 'true');
+          
+          if (access_token) {
+            localStorage.setItem('token', access_token);
+          }
+          if (role) {
+            localStorage.setItem('userRole', role);
+          }
+          
+          // 이름 저장 (이름이 없으면 아이디 앞부분 사용)
+          if (name) {
+            localStorage.setItem('userName', name);
+          } else {
+            localStorage.setItem('userName', this.identifier.split('@')[0]); 
+          }
 
-        // 이름 저장
-        if (name) {
-          localStorage.setItem('userName', name);
-        } else {
-          localStorage.setItem('userName', this.identifier.split('@')[0]); 
-        }
+          // 저장이 성공하면 홈으로 이동
+          this.$router.push('/');
 
-        // [4] 홈으로 이동
-        this.$router.push('/');
+        } catch (storageError) {
+          // 시크릿 모드나 쿠키 차단 등으로 저장소 접근이 막혔을 때 실행됨
+          console.error('스토리지 접근 에러:', storageError);
+          alert('브라우저 보안 설정(쿠키 차단 또는 시크릿 모드)으로 인해 로그인 정보를 저장할 수 없습니다.\n설정을 확인하거나 일반 모드로 다시 시도해주세요.');
+        }
 
       } catch (error) {
         console.error('로그인 에러:', error);
@@ -113,9 +120,9 @@ export default {
           if (error.response.status === 401 || error.response.status === 400) {
             alert('아이디 또는 비밀번호가 일치하지 않습니다.');
           } else if (error.response.status === 422) {
-            alert('데이터 형식이 올바르지 않습니다. (서버 로그 확인 필요)');
+            alert('데이터 형식이 올바르지 않습니다.');
           } else {
-            alert('로그인 중 오류가 발생했습니다. (서버 상태를 확인해주세요)');
+            alert('로그인 중 오류가 발생했습니다.');
           }
         } else {
           alert('서버와 연결할 수 없습니다.');
@@ -129,7 +136,6 @@ export default {
 </script>
 
 <style scoped>
-/* 기존 스타일 유지 */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .login-card { width: 100%; max-width: 420px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; }

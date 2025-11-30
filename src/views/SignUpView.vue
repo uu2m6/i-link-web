@@ -505,10 +505,8 @@ export default {
           details: this.userType === 'parent' ? { ...this.parentInfo } : this.teacherInfo
         };
 
-        // [4] 백엔드 API 호출 (주소는 백엔드 개발자에게 받아서 변경 필요)
-        const response = await axios.post('/api/signup', formData);
+        const response = await axios.post('/api/auth/signup', formData);
 
-        // [5] 성공 시 처리 (서버 응답 코드가 200번대일 경우)
         if (response.status === 200 || response.status === 201) {
           console.log('서버 응답 성공:', response.data);
           
@@ -519,10 +517,9 @@ export default {
         }
 
       } catch (error) {
-        // [6] 실패 시 에러 처리
+
         console.error('회원가입 실패:', error);
         
-        // 백엔드에서 보내준 에러 메시지가 있다면 그걸 보여줌
         const errorMessage = error.response && error.response.data && error.response.data.message 
           ? error.response.data.message 
           : '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.';

@@ -17,6 +17,7 @@
               id="identifier" 
               v-model="identifier" 
               placeholder="이메일 또는 휴대폰 번호 입력" 
+              autocomplete="username"
             />
           </div>
 
@@ -27,6 +28,7 @@
               id="password" 
               v-model="password" 
               placeholder="비밀번호를 입력하세요" 
+              autocomplete="current-password"
             />
           </div>
 
@@ -70,12 +72,11 @@ export default {
       this.isLoggingIn = true;
 
       try {
-        // [1] 폼 데이터 형식으로 변환 (FastAPI 표준)
         const formData = new URLSearchParams();
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-        // [2] 백엔드 요청 (ngrok 헤더 포함)
+        // 1. 백엔드 요청
         const response = await axios.post('/api/auth/token', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -85,47 +86,37 @@ export default {
 
         console.log('로그인 성공:', response.data);
 
-        // [3] 응답 데이터 처리
-        const { access_token, role, name } = response.data;
+        // 2. 데이터 추출 (name은 없을 수도 있음)
+        const { access_token, role, name, user_id } = response.data;
 
-        // [4] ★ 핵심: 저장소 에러가 나도 절대 멈추지 않도록 try-catch 감싸기
+        // 3. [핵심] 저장소 에러가 나도 절대 멈추지 않도록 처리
         try {
           localStorage.setItem('isLoggedIn', 'true');
           
-          if (access_token) {
-            localStorage.setItem('token', access_token);
-          }
-          if (role) {
-            localStorage.setItem('userRole', role);
-          }
+          if (access_token) localStorage.setItem('token', access_token);
+          if (role) localStorage.setItem('userRole', role);
+          if (user_id) localStorage.setItem('userId', user_id);
           
-          // 이름 저장 (없으면 아이디 앞부분)
-          if (name) {
-            localStorage.setItem('userName', name);
-          } else {
-            localStorage.setItem('userName', this.identifier.split('@')[0]); 
-          }
+          // 이름이 없으면 아이디(@앞부분)를 이름으로 사용
+          const userName = name ? name : this.identifier.split('@')[0];
+          localStorage.setItem('userName', userName);
+
         } catch (storageError) {
-          // ★ 에러가 나도 콘솔에만 찍고 alert 없이 그냥 넘어갑니다.
-          console.warn('브라우저 저장소 접근이 차단되었습니다. (로그인 상태 유지는 안 될 수 있음)', storageError);
+          // 에러가 나도 콘솔에만 찍고, 코드는 계속 진행됨!
+          console.warn('저장소 접근 차단됨 (로그인 상태 유지 안 될 수 있음):', storageError);
         }
 
-        // [5] ★ 핵심: 저장이 되든 말든 무조건 홈으로 이동
+        // 4. [이동] 에러 여부와 상관없이 무조건 홈으로!
         this.$router.push('/');
 
       } catch (error) {
         console.error('로그인 에러:', error);
         
         if (error.response) {
-          // ngrok 경고 페이지(HTML)가 왔을 경우 처리
           if (typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE html>')) {
-             // 이 경우 실제로는 성공일 수도 있으므로 홈으로 보내거나 경고를 띄움
-             console.log('ngrok 경고 페이지 감지');
-             // alert('서버 연결 중입니다. 다시 시도해주세요.');
+             console.log('ngrok 경고 페이지 감지됨 (무시)');
           } else if (error.response.status === 401 || error.response.status === 400) {
             alert('아이디 또는 비밀번호가 일치하지 않습니다.');
-          } else if (error.response.status === 422) {
-            alert('데이터 형식이 올바르지 않습니다.');
           } else {
             alert('로그인 중 오류가 발생했습니다.');
           }
@@ -141,6 +132,7 @@ export default {
 </script>
 
 <style scoped>
+/* 스타일 유지 */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .login-card { width: 100%; max-width: 420px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; }

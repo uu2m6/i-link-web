@@ -70,42 +70,59 @@ export default {
       this.isLoggingIn = true;
 
       try {
+        // [1] 폼 데이터 형식으로 변환 (FastAPI 표준)
         const formData = new URLSearchParams();
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-        // 1. 로그인 요청
+        // [2] 백엔드 요청 (ngrok 헤더 포함)
         const response = await axios.post('/api/auth/token', formData, {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'ngrok-skip-browser-warning': 'true'
+          }
         });
 
         console.log('로그인 성공:', response.data);
+
+        // [3] 응답 데이터 처리
         const { access_token, role, name } = response.data;
 
-        // 2. 저장 시도 (실패해도 무시하고 진행)
+        // [4] ★ 핵심: 저장소 에러가 나도 절대 멈추지 않도록 try-catch 감싸기
         try {
           localStorage.setItem('isLoggedIn', 'true');
-          if (access_token) localStorage.setItem('token', access_token);
-          if (role) localStorage.setItem('userRole', role);
           
+          if (access_token) {
+            localStorage.setItem('token', access_token);
+          }
+          if (role) {
+            localStorage.setItem('userRole', role);
+          }
+          
+          // 이름 저장 (없으면 아이디 앞부분)
           if (name) {
             localStorage.setItem('userName', name);
           } else {
             localStorage.setItem('userName', this.identifier.split('@')[0]); 
           }
         } catch (storageError) {
-          console.error('스토리지 저장 실패 (무시하고 이동함):', storageError);
-          // 여기서는 alert를 띄우지 않고 조용히 넘어갑니다.
+          // ★ 에러가 나도 콘솔에만 찍고 alert 없이 그냥 넘어갑니다.
+          console.warn('브라우저 저장소 접근이 차단되었습니다. (로그인 상태 유지는 안 될 수 있음)', storageError);
         }
 
-        // 3. [핵심] 저장이 되든 안 되든 무조건 홈으로 이동!
+        // [5] ★ 핵심: 저장이 되든 말든 무조건 홈으로 이동
         this.$router.push('/');
 
       } catch (error) {
         console.error('로그인 에러:', error);
         
         if (error.response) {
-          if (error.response.status === 401 || error.response.status === 400) {
+          // ngrok 경고 페이지(HTML)가 왔을 경우 처리
+          if (typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE html>')) {
+             // 이 경우 실제로는 성공일 수도 있으므로 홈으로 보내거나 경고를 띄움
+             console.log('ngrok 경고 페이지 감지');
+             // alert('서버 연결 중입니다. 다시 시도해주세요.');
+          } else if (error.response.status === 401 || error.response.status === 400) {
             alert('아이디 또는 비밀번호가 일치하지 않습니다.');
           } else if (error.response.status === 422) {
             alert('데이터 형식이 올바르지 않습니다.');

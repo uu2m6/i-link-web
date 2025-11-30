@@ -70,48 +70,36 @@ export default {
       this.isLoggingIn = true;
 
       try {
-        // [1] 폼 데이터 형식으로 변환 (FastAPI 표준)
         const formData = new URLSearchParams();
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-        // [2] 백엔드 요청
+        // 1. 로그인 요청
         const response = await axios.post('/api/auth/token', formData, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
 
         console.log('로그인 성공:', response.data);
-
         const { access_token, role, name } = response.data;
 
-        // [3] ★ 핵심 수정: 저장소 에러 방지용 try-catch 추가
+        // 2. 저장 시도 (실패해도 무시하고 진행)
         try {
           localStorage.setItem('isLoggedIn', 'true');
+          if (access_token) localStorage.setItem('token', access_token);
+          if (role) localStorage.setItem('userRole', role);
           
-          if (access_token) {
-            localStorage.setItem('token', access_token);
-          }
-          if (role) {
-            localStorage.setItem('userRole', role);
-          }
-          
-          // 이름 저장 (이름이 없으면 아이디 앞부분 사용)
           if (name) {
             localStorage.setItem('userName', name);
           } else {
             localStorage.setItem('userName', this.identifier.split('@')[0]); 
           }
-
-          // 저장이 성공하면 홈으로 이동
-          this.$router.push('/');
-
         } catch (storageError) {
-          // 시크릿 모드나 쿠키 차단 등으로 저장소 접근이 막혔을 때 실행됨
-          console.error('스토리지 접근 에러:', storageError);
-          alert('브라우저 보안 설정(쿠키 차단 또는 시크릿 모드)으로 인해 로그인 정보를 저장할 수 없습니다.\n설정을 확인하거나 일반 모드로 다시 시도해주세요.');
+          console.error('스토리지 저장 실패 (무시하고 이동함):', storageError);
+          // 여기서는 alert를 띄우지 않고 조용히 넘어갑니다.
         }
+
+        // 3. [핵심] 저장이 되든 안 되든 무조건 홈으로 이동!
+        this.$router.push('/');
 
       } catch (error) {
         console.error('로그인 에러:', error);

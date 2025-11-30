@@ -14,8 +14,8 @@
             <input type="radio" v-model="userType" value="parent" name="userType">
             <span>👨‍👩‍👧‍👦 학부모</span>
           </label>
-          <label :class="{ active: userType === 'teacher' }">
-            <input type="radio" v-model="userType" value="teacher" name="userType">
+          <label :class="{ active: userType === 'sitter' }">
+            <input type="radio" v-model="userType" value="sitter" name="userType">
             <span>👩‍🏫 돌봄선생님</span>
           </label>
         </div>
@@ -140,7 +140,7 @@
           </div>
         </div>
 
-        <div v-if="userType === 'teacher'" class="conditional-section">
+        <div v-if="userType === 'sitter'" class="conditional-section">
           <p class="section-title">선생님 정보 입력</p>
 
           <div class="input-group">
@@ -220,41 +220,11 @@
         <div class="terms-container">
           <label class="terms-label">개인정보 처리방침</label>
           <div class="terms-scroll-box">
-            <p class="terms-title">제1조 (수집하는 개인정보 항목)</p>
+             <p class="terms-title">제1조 (수집하는 개인정보 항목)</p>
             <p>회사는 회원가입, 상담, 서비스 신청 등을 위해 아래와 같은 개인정보를 수집하고 있습니다.</p>
             <ul class="terms-list">
-              <li><strong>1. 학부모 회원</strong>
-                <ul>
-                  <li>필수항목: 이름, 이메일(아이디), 비밀번호, 주소</li>
-                  <li>자녀정보: 자녀의 이름, 생년월일, 성별, 돌봄 요청사항</li>
-                  <li>매칭정보: 희망 시급, 희망 돌봄 유형</li>
-                </ul>
-              </li>
-              <li><strong>2. 선생님 회원</strong>
-                <ul>
-                  <li>필수항목: 이름, 이메일(아이디), 비밀번호, 주소</li>
-                  <li>자격정보: 프로필 사진, 자격증 사본, 경력사항, 자기소개</li>
-                  <li>매칭정보: 희망 시급, 활동 가능 지역, CCTV 동의 여부</li>
-                </ul>
-              </li>
-              <li><strong>3. 서비스 이용 과정에서 자동 수집</strong>
-                <ul>
-                  <li>IP 주소, 쿠키, 방문 일시, 서비스 이용 기록, 기기정보</li>
-                  <li>위치정보 (위치기반 서비스 이용 시)</li>
-                </ul>
-              </li>
-            </ul>
-
-            <p class="terms-title">제2조 (개인정보의 수집 및 이용목적)</p>
-            <p>회사는 수집한 개인정보를 다음의 목적을 위해 활용합니다.</p>
-            <ul class="terms-list">
-              <li><strong>1. 서비스 제공 및 계약 이행</strong><br>아이돌봄 교사 매칭, 콘텐츠 제공, 본인인증, 구매 및 요금 결제</li>
-              <li><strong>2. 회원 관리</strong><br>회원제 서비스 이용에 따른 본인확인, 개인식별, 가입의사 확인, 연령확인, 불만처리 등 민원처리</li>
-              <li><strong>3. 신규 서비스 개발 및 마케팅</strong><br>신규 서비스 개발, 통계학적 특성에 따른 서비스 제공, 접속 빈도 파악</li>
-            </ul>
-
-            <p class="terms-title">제3조 (개인정보의 보유 및 이용기간)</p>
-            <p>원칙적으로 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 관계법령의 규정에 의하여 보존할 필요가 있는 경우 회사는 관계법령에서 정한 일정한 기간 동안 회원정보를 보관합니다.</p>
+              <li><strong>1. 공통 필수항목</strong><br>이름, 이메일(아이디), 비밀번호, 주소</li>
+              </ul>
           </div>
           <div class="agreement-section">
             <input type="checkbox" id="agree" v-model="agreed" />
@@ -282,13 +252,9 @@ export default {
   data() {
     return {
       isSubmitting: false,
-      
-      // [필수] 이름(name) 추가 (백엔드 요구사항)
       name: '',
-      // phone은 삭제
-      
       identifier: '',
-      userType: 'parent',
+      userType: 'parent', 
       password: '',
       confirmPassword: '',
       passwordError: '',
@@ -300,7 +266,7 @@ export default {
         children: [{ birthYear: '', age: '', gender: '' }],
         selectedProvince: '',
         selectedDistrict: '',
-        detailAddress: '', 
+        detailAddress: '',
         wage: null,
         wageNegotiable: false,
         careTypes: [],
@@ -408,7 +374,6 @@ export default {
     },
 
     validateInputs() {
-      // [수정] 필수 필드: 이름(name) 포함
       if (!this.name) return false;
       if (!this.identifier) return false;
       if (!this.password) return false;
@@ -423,7 +388,8 @@ export default {
         if (!this.parentInfo.wage) return false;
         if (this.parentInfo.careTypes.length === 0) return false;
       } 
-      else if (this.userType === 'teacher') {
+      // [수정] teacher -> sitter로 조건 변경
+      else if (this.userType === 'sitter') {
         if (!this.teacherInfo.experienceYear) return false;
         if (!this.teacherInfo.experienceDesc) return false;
         if (this.teacherInfo.activities.length === 0) return false;
@@ -438,7 +404,7 @@ export default {
       if (this.isSubmitting) return;
 
       if (!this.validateInputs()) {
-        alert('필수 정보를 모두 입력했는지 확인해주세요.');
+        alert('이름, 이메일 등 필수 정보를 모두 입력했는지 확인해주세요.');
         return;
       }
       const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).+$/;
@@ -456,6 +422,11 @@ export default {
         return;
       }
       
+      // [수정] teacher -> sitter
+      if (this.userType === 'sitter') {
+        this.teacherInfo.certifications = this.teacherInfo.certifications.filter(c => c.trim() !== '');
+      }
+
       this.isSubmitting = true;
 
       try {
@@ -463,7 +434,6 @@ export default {
           ? Number(String(this.parentInfo.wage).replace(/,/g, '')) 
           : Number(String(this.teacherInfo.wage).replace(/,/g, ''));
 
-        // 주소 합치기
         let fullAddress = '';
         if (this.userType === 'parent') {
           fullAddress = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict} ${this.parentInfo.detailAddress}`.trim();
@@ -478,7 +448,7 @@ export default {
           email: this.identifier,
           password1: this.password,
           password2: this.confirmPassword,
-          role: this.userType,
+          role: this.userType, // [핵심] 'sitter'로 전송됩니다.
           address: fullAddress,
 
           children: this.userType === 'parent' ? this.parentInfo.numChildren : null,
@@ -489,19 +459,22 @@ export default {
           
           hope_pay: numericWage,
           
-          activities: this.userType === 'teacher' ? this.teacherInfo.activities : null,
-          hope_regions: this.userType === 'teacher' ? this.teacherInfo.selectedRegions : null,
-          pay_period: this.userType === 'teacher' ? this.teacherInfo.paymentCycles : null,
-          cctv_agree: this.userType === 'teacher' ? (this.teacherInfo.cctvAgree === 'agree') : null,
+          // [수정] teacher -> sitter 조건 변경
+          activities: this.userType === 'sitter' ? this.teacherInfo.activities : null,
+          hope_regions: this.userType === 'sitter' ? this.teacherInfo.selectedRegions : null,
+          pay_period: this.userType === 'sitter' ? this.teacherInfo.paymentCycles : null,
+          cctv_agree: this.userType === 'sitter' ? (this.teacherInfo.cctvAgree === 'agree') : null,
           info_agree: this.agreed,
           
-          career: this.userType === 'teacher' ? this.teacherInfo.experienceYear : null,
-          career_detail: this.userType === 'teacher' ? this.teacherInfo.experienceDesc : null,
-          certifications: this.userType === 'teacher' ? this.teacherInfo.certifications.filter(c => c.trim() !== '') : null,
-          introduction: this.userType === 'teacher' ? this.teacherInfo.notes : null
+          career: this.userType === 'sitter' ? this.teacherInfo.experienceYear : null,
+          career_detail: this.userType === 'sitter' ? this.teacherInfo.experienceDesc : null,
+          certifications: this.userType === 'sitter' ? this.teacherInfo.certifications.filter(c => c.trim() !== '') : null,
+          introduction: this.userType === 'sitter' ? this.teacherInfo.notes : null
         };
 
-        const response = await axios.post('/api/auth/signup', formData);
+        const response = await axios.post('/api/auth/signup', formData, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
 
         if (response.status === 200 || response.status === 201) {
           this.$emit('show-modal', {
@@ -512,11 +485,10 @@ export default {
 
       } catch (error) {
         if (error.response) {
-          console.error('서버 에러:', error.response.data);
+          console.error('서버 에러 상세:', error.response.data);
           
-          // 500 에러 처리 추가
           if (error.response.status === 500) {
-            alert('서버 내부 오류가 발생했습니다.\n(이미 가입된 이메일일 수 있습니다. 다른 이메일로 시도해보세요.)');
+            alert('서버 내부 오류가 발생했습니다.\n입력 데이터를 다시 확인하거나 다른 이메일로 시도해보세요.');
           } else {
             const errorDetail = error.response.data.detail;
             let alertMsg = '';
@@ -539,7 +511,7 @@ export default {
 </script>
 
 <style scoped>
-/* (스타일은 기존 그대로 사용하세요) */
+/* (스타일은 그대로 유지) */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .signup-card { width: 100%; max-width: 560px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }

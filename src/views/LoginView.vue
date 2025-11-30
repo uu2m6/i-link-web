@@ -76,7 +76,7 @@ export default {
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-        // 1. 백엔드 요청
+        // 1. 로그인 요청
         const response = await axios.post('/api/auth/token', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -84,37 +84,32 @@ export default {
           }
         });
 
-        console.log('로그인 성공:', response.data);
-
-        // 2. 데이터 추출 (name은 없을 수도 있음)
+        // 2. 데이터 분해
         const { access_token, role, name, user_id } = response.data;
 
-        // 3. [핵심] 저장소 에러가 나도 절대 멈추지 않도록 처리
+        // 3. [핵심] 죽어도 일단 실행해봄 (저장 시도)
         try {
           localStorage.setItem('isLoggedIn', 'true');
-          
           if (access_token) localStorage.setItem('token', access_token);
           if (role) localStorage.setItem('userRole', role);
           if (user_id) localStorage.setItem('userId', user_id);
           
-          // 이름이 없으면 아이디(@앞부분)를 이름으로 사용
           const userName = name ? name : this.identifier.split('@')[0];
           localStorage.setItem('userName', userName);
-
-        } catch (storageError) {
-          // 에러가 나도 콘솔에만 찍고, 코드는 계속 진행됨!
-          console.warn('저장소 접근 차단됨 (로그인 상태 유지 안 될 수 있음):', storageError);
+        } catch (e) {
+          console.error('저장소 에러 무시함:', e);
         }
 
-        // 4. [이동] 에러 여부와 상관없이 무조건 홈으로!
-        this.$router.push('/');
+        // 4. [강제 이동] Vue 라우터가 아니라 브라우저 자체를 이동시킴
+        alert('로그인 성공! 홈으로 이동합니다.'); // 성공 확인용 알림
+        window.location.href = '/'; // <--- 이게 "핵폭탄" 코드입니다. 무조건 이동합니다.
 
       } catch (error) {
         console.error('로그인 에러:', error);
         
         if (error.response) {
           if (typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE html>')) {
-             console.log('ngrok 경고 페이지 감지됨 (무시)');
+             console.log('ngrok 경고 페이지 (무시)');
           } else if (error.response.status === 401 || error.response.status === 400) {
             alert('아이디 또는 비밀번호가 일치하지 않습니다.');
           } else {
@@ -132,7 +127,7 @@ export default {
 </script>
 
 <style scoped>
-/* 스타일 유지 */
+/* 기존 스타일 그대로 유지 */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .login-card { width: 100%; max-width: 420px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; }

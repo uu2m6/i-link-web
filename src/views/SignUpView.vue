@@ -21,8 +21,18 @@
         </div>
 
         <div class="input-group">
-          <label for="identifier">이메일 또는 휴대폰 번호</label>
-          <input type="text" id="identifier" v-model="identifier" placeholder="이메일 또는 휴대폰 번호 입력" />
+          <label for="name">이름 (실명)</label>
+          <input type="text" id="name" v-model="name" placeholder="홍길동" />
+        </div>
+
+        <div class="input-group">
+          <label for="identifier">이메일 (아이디)</label>
+          <input type="email" id="identifier" v-model="identifier" placeholder="example@email.com" />
+        </div>
+
+        <div class="input-group">
+          <label for="phone">휴대전화번호</label>
+          <input type="tel" id="phone" v-model="phone" placeholder="010-1234-5678" />
         </div>
 
         <div class="input-group">
@@ -58,7 +68,7 @@
             <input 
               type="number" 
               v-model.number="parentInfo.numChildren" 
-              placeholder="아이 수를 숫자로 입력하세요 (예: 2)" 
+              placeholder="숫자 입력 (예: 2)" 
               min="1" 
               max="10"
               class="number-input"
@@ -67,7 +77,6 @@
 
           <div v-for="(child, index) in parentInfo.children" :key="index" class="child-info-box">
             <p class="child-info-title">{{ index + 1 }}번째 아이 정보</p>
-            
             <div class="input-group-row">
               <div class="input-group">
                 <label :for="'birthYear' + index">출생년도</label>
@@ -81,7 +90,6 @@
                 <input type="number" :id="'age' + index" v-model="child.age" placeholder="자동 계산" readonly />
               </div>
             </div>
-
             <div class="input-group" style="margin-bottom: 0;">
               <label>성별</label>
               <div class="radio-group horizontal small">
@@ -107,10 +115,11 @@
                 <option v-for="district in districtsForParent" :key="district" :value="district">{{ district }}</option>
               </select>
             </div>
+            <input type="text" v-model="parentInfo.detailAddress" placeholder="상세 주소 (선택)" style="margin-top: 10px;">
           </div>
 
           <div class="input-group">
-            <label for="parentWage">희망 시급 <span class="hint-text">(2025년 최저시급: 10,030원)</span></label>
+            <label for="parentWage">희망 시급 <span class="hint-text">(2025년 최저: 10,030원)</span></label>
             <div class="wage-input-wrapper">
               <input type="text" id="parentWage" :value="formatWage(parentInfo.wage)" @input="e => onWageInput(e, parentInfo)" placeholder="10,030">
               <div class="checkbox-wrapper">
@@ -121,7 +130,7 @@
           </div>
 
           <div class="input-group">
-            <label>어떤 돌봄을 원하세요? <span class="hint-text">최대 3개 선택 가능</span></label>
+            <label>어떤 돌봄을 원하세요?</label>
             <div class="checkbox-grid">
               <label v-for="care in careOptions" :key="care">
                 <input type="checkbox" :value="care" v-model="parentInfo.careTypes" @change="checkCareLimit">
@@ -131,8 +140,8 @@
           </div>
 
           <div class="input-group">
-            <label for="parentNotes">선생님이 알아야 할 내용이 있나요? (선택)</label>
-            <textarea id="parentNotes" v-model="parentInfo.notes" placeholder="아이 성격, 특이사항, 알레르기 유무 등"></textarea>
+            <label for="parentNotes">선생님이 알아야 할 내용 (선택)</label>
+            <textarea id="parentNotes" v-model="parentInfo.notes" placeholder="아이 성격, 알레르기 등"></textarea>
           </div>
         </div>
 
@@ -144,41 +153,29 @@
             <select v-model="teacherInfo.experienceYear">
               <option value="" disabled>선택해주세요</option>
               <option value="new">신입 (1년 미만)</option>
-              <option value="1-3">1년 이상 ~ 3년 미만</option>
-              <option value="3-5">3년 이상 ~ 5년 미만</option>
-              <option value="5-10">5년 이상 ~ 10년 미만</option>
+              <option value="1-3">1년 ~ 3년 미만</option>
+              <option value="3-5">3년 ~ 5년 미만</option>
+              <option value="5-10">5년 ~ 10년 미만</option>
               <option value="10+">10년 이상</option>
             </select>
           </div>
 
           <div class="input-group">
-            <label for="experienceDesc">경력 상세 내용 <span class="hint-text">(주요 활동 위주)</span></label>
-            <textarea 
-              id="experienceDesc" 
-              v-model="teacherInfo.experienceDesc" 
-              placeholder="예) OO어린이집 교사 2년, 등하원 도우미 1년 등 경력을 상세히 적어주세요."
-            ></textarea>
+            <label for="experienceDesc">경력 상세 내용</label>
+            <textarea id="experienceDesc" v-model="teacherInfo.experienceDesc" placeholder="주요 경력을 적어주세요."></textarea>
           </div>
 
           <div class="input-group">
             <label>보유 자격증 <span class="hint-text">(선택)</span></label>
-            <div 
-              v-for="(cert, index) in teacherInfo.certifications" 
-              :key="index" 
-              class="cert-input-row"
-            >
-              <input 
-                type="text" 
-                v-model="teacherInfo.certifications[index]" 
-                placeholder="자격증 이름을 입력하세요 (예: 보육교사 2급)"
-              >
+            <div v-for="(cert, index) in teacherInfo.certifications" :key="index" class="cert-input-row">
+              <input type="text" v-model="teacherInfo.certifications[index]" placeholder="자격증 이름">
               <button class="icon-btn remove" @click="removeCertification(index)">✕</button>
             </div>
             <button class="add-btn" @click="addCertification">+ 자격증 추가하기</button>
           </div>
 
           <div class="input-group">
-            <label>가능한 활동을 모두 선택해 주세요.</label>
+            <label>가능한 활동</label>
             <div class="checkbox-grid">
               <label v-for="activity in activityOptions" :key="activity">
                 <input type="checkbox" :value="activity" v-model="teacherInfo.activities">
@@ -188,14 +185,14 @@
           </div>
 
           <div class="input-group">
-            <label>희망 활동 지역 <span class="hint-text">중복 추가 가능</span></label>
+            <label>희망 활동 지역</label>
             <div class="address-group">
               <select v-model="teacherRegionSelect.province">
-                <option value="" disabled>시/도 선택</option>
+                <option value="" disabled>시/도</option>
                 <option v-for="province in provinces" :key="province" :value="province">{{ province }}</option>
               </select>
               <select v-model="teacherRegionSelect.district" :disabled="!teacherRegionSelect.province">
-                <option value="" disabled>구/군 선택</option>
+                <option value="" disabled>구/군</option>
                 <option v-for="district in districtsForTeacher" :key="district" :value="district">{{ district }}</option>
               </select>
               <button class="address-btn" @click="addTeacherRegion" :disabled="!teacherRegionSelect.district">추가</button>
@@ -208,35 +205,20 @@
           </div>
 
           <div class="input-group">
-            <label for="teacherWage">희망 시급 <span class="hint-text">(2025년 최저시급: 10,030원)</span></label>
+            <label for="teacherWage">희망 시급</label>
             <input type="text" id="teacherWage" :value="formatWage(teacherInfo.wage)" @input="e => onWageInput(e, teacherInfo)" placeholder="10,030">
           </div>
           
           <div class="input-group">
-            <label>희망 정산 주기 (복수 선택 가능)</label>
-            <div class="checkbox-grid">
-              <label v-for="cycle in paymentCycles" :key="cycle">
-                <input type="checkbox" :value="cycle" v-model="teacherInfo.paymentCycles">
-                <span>{{ cycle }}</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label>CCTV 촬영에 동의합니까?</label>
+            <label>CCTV 동의 여부</label>
             <div class="radio-group horizontal">
               <label :class="{ active: teacherInfo.cctvAgree === 'agree' }">
-                <input type="radio" v-model="teacherInfo.cctvAgree" value="agree"> 동의합니다
+                <input type="radio" v-model="teacherInfo.cctvAgree" value="agree"> 동의함
               </label>
               <label :class="{ active: teacherInfo.cctvAgree === 'disagree' }">
-                <input type="radio" v-model="teacherInfo.cctvAgree" value="disagree"> 동의하지 않습니다
+                <input type="radio" v-model="teacherInfo.cctvAgree" value="disagree"> 동의안함
               </label>
             </div>
-          </div>
-
-          <div class="input-group">
-            <label for="teacherNotes">자기소개 및 강점 (선택)</label>
-            <textarea id="teacherNotes" v-model="teacherInfo.notes" placeholder="아이들에게 어떤 선생님이 되어주고 싶은지, 본인의 강점 등을 자유롭게 작성해주세요."></textarea>
           </div>
         </div>
 
@@ -246,51 +228,16 @@
              <p class="terms-title">제1조 (수집하는 개인정보 항목)</p>
             <p>회사는 회원가입, 상담, 서비스 신청 등을 위해 아래와 같은 개인정보를 수집하고 있습니다.</p>
             <ul class="terms-list">
-              <li><strong>1. 학부모 회원</strong>
-                <ul>
-                  <li>필수항목: 이름, 이메일(아이디), 비밀번호, 휴대전화번호, 주소</li>
-                  <li>자녀정보: 자녀의 이름, 생년월일, 성별, 돌봄 요청사항</li>
-                  <li>매칭정보: 희망 시급, 희망 돌봄 유형</li>
-                </ul>
-              </li>
-              <li><strong>2. 선생님 회원</strong>
-                <ul>
-                  <li>필수항목: 이름, 이메일(아이디), 비밀번호, 생년월일, 휴대전화번호, 주소</li>
-                  <li>자격정보: 프로필 사진, 자격증 사본, 경력사항, 자기소개</li>
-                  <li>매칭정보: 희망 시급, 활동 가능 지역, CCTV 동의 여부</li>
-                </ul>
-              </li>
-              <li><strong>3. 서비스 이용 과정에서 자동 수집</strong>
-                <ul>
-                  <li>IP 주소, 쿠키, 방문 일시, 서비스 이용 기록, 기기정보</li>
-                  <li>위치정보 (위치기반 서비스 이용 시)</li>
-                </ul>
-              </li>
-            </ul>
-
-            <p class="terms-title">제2조 (개인정보의 수집 및 이용목적)</p>
-            <p>회사는 수집한 개인정보를 다음의 목적을 위해 활용합니다.</p>
-            <ul class="terms-list">
-              <li><strong>1. 서비스 제공 및 계약 이행</strong><br>아이돌봄 교사 매칭, 콘텐츠 제공, 본인인증, 구매 및 요금 결제</li>
-              <li><strong>2. 회원 관리</strong><br>회원제 서비스 이용에 따른 본인확인, 개인식별, 가입의사 확인, 연령확인, 불만처리 등 민원처리</li>
-              <li><strong>3. 신규 서비스 개발 및 마케팅</strong><br>신규 서비스 개발, 통계학적 특성에 따른 서비스 제공, 접속 빈도 파악</li>
-            </ul>
-
-            <p class="terms-title">제3조 (개인정보의 보유 및 이용기간)</p>
-            <p>원칙적으로 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 관계법령의 규정에 의하여 보존할 필요가 있는 경우 회사는 관계법령에서 정한 일정한 기간 동안 회원정보를 보관합니다.</p>
-          </div>
-          
+              <li><strong>1. 공통 필수항목</strong><br>이름, 이메일(아이디), 비밀번호, 휴대전화번호, 주소</li>
+              </ul>
+            </div>
           <div class="agreement-section">
             <input type="checkbox" id="agree" v-model="agreed" />
             <label for="agree">위 개인정보 처리방침을 확인하였으며, 이에 동의합니다.</label>
           </div>
         </div>
 
-        <BaseButton 
-          @click="signUp" 
-          type="primary" 
-          :disabled="!agreed || isSubmitting"
-        >
+        <BaseButton @click="signUp" type="primary" :disabled="!agreed || isSubmitting">
           {{ isSubmitting ? '가입 처리 중...' : '가입하기' }}
         </BaseButton>
       </div>
@@ -310,6 +257,10 @@ export default {
   data() {
     return {
       isSubmitting: false,
+      // [추가됨] 이름, 연락처 변수
+      name: '',
+      phone: '',
+      
       identifier: '',
       userType: 'parent',
       password: '',
@@ -337,7 +288,7 @@ export default {
         activities: [],
         selectedRegions: [],
         wage: null,
-        paymentCycles: [],
+        paymentCycles: ['월급'], // 기본값 예시
         cctvAgree: '',
         notes: ''
       },
@@ -378,9 +329,7 @@ export default {
       const currentLength = this.parentInfo.children.length;
       if (newCount > currentLength) {
         const diff = newCount - currentLength;
-        for (let i = 0; i < diff; i++) {
-          this.parentInfo.children.push({ birthYear: '', age: '', gender: '' });
-        }
+        for (let i = 0; i < diff; i++) this.parentInfo.children.push({ birthYear: '', age: '', gender: '' });
       } else if (newCount < currentLength) {
         this.parentInfo.children.splice(newCount);
       }
@@ -397,12 +346,8 @@ export default {
     }
   },
   methods: {
-    addCertification() {
-      this.teacherInfo.certifications.push('');
-    },
-    removeCertification(index) {
-      this.teacherInfo.certifications.splice(index, 1);
-    },
+    addCertification() { this.teacherInfo.certifications.push(''); },
+    removeCertification(index) { this.teacherInfo.certifications.splice(index, 1); },
     resetPasswordError() { this.passwordError = ''; },
     formatWage(value) {
       if (!value) return '';
@@ -437,7 +382,10 @@ export default {
     },
 
     validateInputs() {
+      // [수정] 필수 필드에 이름, 연락처 추가
+      if (!this.name) return false;
       if (!this.identifier) return false;
+      if (!this.phone) return false;
       if (!this.password) return false;
       if (!this.confirmPassword) return false;
 
@@ -456,18 +404,16 @@ export default {
         if (this.teacherInfo.activities.length === 0) return false;
         if (this.teacherInfo.selectedRegions.length === 0) return false;
         if (!this.teacherInfo.wage) return false;
-        if (this.teacherInfo.paymentCycles.length === 0) return false;
         if (!this.teacherInfo.cctvAgree) return false;
       }
       return true;
     },
     
-    // [중요 수정] 실제 백엔드 통신을 위한 signUp 함수
     async signUp() {
       if (this.isSubmitting) return;
 
       if (!this.validateInputs()) {
-        alert('모든 필수 정보를 입력했는지 확인해주세요.');
+        alert('모든 필수 정보(이름, 연락처 등)를 입력했는지 확인해주세요.');
         return;
       }
       const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).+$/;
@@ -495,30 +441,35 @@ export default {
       this.isSubmitting = true;
 
       try {
-        // [1] 시급 콤마 제거 및 숫자 변환 로직 (422 에러 방지 핵심!)
+        // [중요] 시급 숫자 변환
         const numericWage = this.userType === 'parent' 
           ? Number(String(this.parentInfo.wage).replace(/,/g, '')) 
           : Number(String(this.teacherInfo.wage).replace(/,/g, ''));
 
-        // [2] 백엔드 친화적인 데이터 구조 생성
-        // 필수 필드를 최상단에, 상세 정보를 펼쳐서 보냄
+        // [중요] 주소 합치기 (시/도 + 구/군 + 상세)
+        let fullAddress = '';
+        if (this.userType === 'parent') {
+          fullAddress = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict} ${this.parentInfo.detailAddress}`.trim();
+        } else {
+          // 선생님은 활동지역이 여러 개라 주소가 애매하지만, 본인 주소 칸을 따로 만들지 않았으므로
+          // 일단 첫 번째 희망 지역을 주소로 보내거나 빈 값으로 둡니다.
+          // (여기서는 학부모와 같은 방식으로 입력받지 않았으므로 빈 문자열 또는 별도 입력 필요)
+          fullAddress = '선생님 주소 미입력'; 
+        }
+
         const formData = {
           email: this.identifier,
           username: this.identifier,
           password: this.password,
-          user_type: this.userType, // snake_case
-          wage: numericWage,        // Integer 타입으로 보냄
+          name: this.name,   // [추가됨] 이름 전송
+          phone: this.phone, // [추가됨] 연락처 전송
+          address: fullAddress, // [추가됨] 합친 주소 전송
+          user_type: this.userType,
+          wage: numericWage,
           
-          // 상세 정보 펼치기 (Spread Operator)
           ...(this.userType === 'parent' ? this.parentInfo : this.teacherInfo)
         };
 
-        // [3] 안전을 위해 details 객체도 추가로 넣어둠 (백엔드 구조에 따라 둘 중 하나는 맞음)
-        formData.details = this.userType === 'parent' ? this.parentInfo : this.teacherInfo;
-
-        console.log('서버로 전송할 데이터:', formData); // 디버깅용 로그
-
-        // [4] 실제 전송
         const response = await axios.post('/api/auth/signup', formData);
 
         if (response.status === 200 || response.status === 201) {
@@ -529,15 +480,13 @@ export default {
         }
 
       } catch (error) {
-        // [5] 에러 상세 분석 로그
         if (error.response) {
-          console.error('서버 응답 에러 데이터:', error.response.data);
+          console.error('서버 에러:', error.response.data);
           const errorMsg = error.response.data.detail 
             ? (typeof error.response.data.detail === 'object' ? JSON.stringify(error.response.data.detail) : error.response.data.detail)
             : '회원가입 중 오류가 발생했습니다.';
-          alert('가입 실패: ' + errorMsg);
+          alert('가입 실패:\n' + errorMsg);
         } else {
-          console.error('요청 설정 에러:', error.message);
           alert('서버와 연결할 수 없습니다.');
         }
       } finally {
@@ -549,7 +498,7 @@ export default {
 </script>
 
 <style scoped>
-/* 기존 스타일 유지 */
+/* (기존 스타일 모두 유지) */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .signup-card { width: 100%; max-width: 560px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }

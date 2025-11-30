@@ -3,6 +3,7 @@
     <TheHeader />
     <main class="auth-layout">
       <div class="signup-card">
+        <form @submit.prevent="signUp">
         <div class="logo">
           <span class="logo-icon">🔗</span>
           <span class="logo-text">아이Link</span>
@@ -293,7 +294,7 @@
         >
           {{ isSubmitting ? '가입 처리 중...' : '가입하기' }}
         </BaseButton>
-      </div>
+      </form> </div>
     </main>
   </div>
 </template>
@@ -464,7 +465,6 @@ export default {
       return true;
     },
     
-    // [2] 실제 통신 로직으로 변경된 signUp 함수
     async signUp() {
       if (this.isSubmitting) return;
 
@@ -499,11 +499,13 @@ export default {
       try {
         // [3] 서버에 보낼 데이터 포장
         const formData = {
-          identifier: this.identifier,
-          userType: this.userType,
+          email: this.identifier,       
+          username: this.identifier,    
           password: this.password,
+          user_type: this.userType,
+         
           details: this.userType === 'parent' ? { ...this.parentInfo } : this.teacherInfo
-        };
+};
 
         const response = await axios.post('/api/auth/signup', formData);
 

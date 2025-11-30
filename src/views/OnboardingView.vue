@@ -26,6 +26,11 @@
         </div>
 
         <BaseButton @click="submitDocuments" type="secondary">제출하고 시작하기</BaseButton>
+
+        <div class="skip-area">
+          <button class="skip-btn" @click="skipOnboarding">다음에 설정하기 ></button>
+        </div>
+
       </div>
     </main>
   </div>
@@ -33,13 +38,13 @@
 
 <script>
 import BaseButton from '../components/BaseButton.vue';
-import TheHeader from '../components/TheHeader.vue'; // 헤더 컴포넌트 추가
+import TheHeader from '../components/TheHeader.vue';
 
 export default {
   emits: ['show-modal'],
   components: {
     BaseButton,
-    TheHeader // 헤더 컴포넌트 등록
+    TheHeader
   },
   data() {
     return {
@@ -59,34 +64,37 @@ export default {
     },
     submitDocuments() {
       if (!this.selectedFile) {
-        this.$emit('show-modal', { 
-          message: '파일을 먼저 선택해주세요.', 
-          onConfirm: () => {}
-        });
+        // 모달 대신 alert 사용 예시 (기존 로직 유지)
+        alert('파일을 먼저 선택해주세요.');
         return;
       }
       console.log('서버로 제출할 파일:', this.selectedFile);
-      this.$emit('show-modal', {
-        message: '증명서가 성공적으로 제출되었습니다. 관리자 확인 후 활동이 가능합니다.',
-        onConfirm: () => this.$router.push('/home')
-      });
+      alert('증명서가 성공적으로 제출되었습니다. 관리자 확인 후 활동이 가능합니다.');
+      this.$router.push('/home');
+    },
+    
+    // [추가됨] 건너뛰기 기능
+    skipOnboarding() {
+      if (confirm('자격 증명을 나중에 하시겠습니까?\n인증되지 않은 상태에서는 일부 활동이 제한될 수 있습니다.')) {
+        this.$router.push('/home');
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-/* 로그인/회원가입과 동일한 새 레이아웃 스타일 */
+/* 로그인/회원가입과 동일한 레이아웃 스타일 */
 .auth-layout {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 60px 20px;
   min-height: calc(100vh - 75px);
-  background-color: #f8f9fa; /* 연한 회색 배경 */
+  background-color: #f8f9fa;
 }
 
-/* 기존 카드 스타일 */
+/* 카드 스타일 */
 .onboarding-card {
   width: 100%;
   max-width: 480px;
@@ -109,4 +117,21 @@ export default {
 .file-name-icon { font-size: 30px; color: #4CAF50; }
 .file-name { font-size: 16px; font-weight: 600; color: #333; margin: 10px 0; word-break: break-all; }
 .file-change-hint { font-size: 13px; color: #aaa; }
+
+/* [추가됨] 건너뛰기 버튼 스타일 */
+.skip-area {
+  margin-top: 20px;
+}
+.skip-btn {
+  background: none;
+  border: none;
+  color: #868e96;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.skip-btn:hover {
+  color: #495057;
+}
 </style>

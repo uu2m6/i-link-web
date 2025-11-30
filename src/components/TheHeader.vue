@@ -1,6 +1,6 @@
 <template>
   <header class="main-header">
-    <div class="logo" @click="$router.push('/')">
+    <div class="logo" @click="goHome">
       <span class="logo-icon" v-if="showIcon">🔗</span>
       아이Link
     </div>
@@ -17,55 +17,22 @@
 export default {
   name: 'TheHeader',
   props: {
-    showIcon: {
-      type: Boolean,
-      default: false
+    showIcon: { type: Boolean, default: false }
+  },
+  methods: {
+    goHome() {
+      // [수정] 불필요한 변수 선언 삭제 -> 바로 홈으로 이동
+      this.$router.push('/'); 
     }
   }
 }
 </script>
 
 <style scoped>
-/* HomeView의 헤더 스타일과 통일 */
-.main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 5%; /* 좌우 여백 */
-  background-color: white;
-  border-bottom: 1px solid #e9ecef;
-  height: 60px; /* 높이 고정 */
-  box-sizing: border-box;
-}
-
-.logo {
-  font-size: 20px;
-  font-weight: 800;
-  color: #FBBF24; /* 포인트 컬러 */
-  cursor: pointer; /* 클릭 커서 */
-  display: flex;
-  align-items: center;
-}
-
-.logo-icon {
-  margin-right: 5px;
-  font-size: 24px;
-}
-
-.header-nav a {
-  color: #868e96;
-  font-size: 14px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.header-nav a:hover {
-  color: #FBBF24; /* 호버 시 노란색 */
-}
-
-.header-nav span {
-  margin: 0 10px;
-  color: #dee2e6;
-}
+.main-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background-color: white; border-bottom: 1px solid #e9ecef; height: 60px; box-sizing: border-box; }
+.logo { font-size: 20px; font-weight: 800; color: #FBBF24; cursor: pointer; display: flex; align-items: center; }
+.logo-icon { margin-right: 5px; font-size: 24px; }
+.header-nav a { color: #868e96; font-size: 14px; text-decoration: none; cursor: pointer; transition: color 0.2s; }
+.header-nav a:hover { color: #FBBF24; }
+.header-nav span { margin: 0 10px; color: #dee2e6; }
 </style>

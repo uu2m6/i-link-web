@@ -9,18 +9,33 @@
         </div>
         <p class="tagline">아이와 세상을 연결하는 다리</p>
 
-        <div class="input-group">
-          <label for="identifier">이메일 또는 휴대폰 번호</label>
-          <input type="text" id="identifier" v-model="identifier" placeholder="이메일 또는 휴대폰 번호 입력" />
-        </div>
+        <form @submit.prevent="login">
+          <div class="input-group">
+            <label for="identifier">이메일 (아이디)</label>
+            <input 
+              type="text" 
+              id="identifier" 
+              v-model="identifier" 
+              placeholder="이메일 또는 휴대폰 번호 입력" 
+            />
+          </div>
 
-        <div class="input-group">
-          <label for="password">비밀번호</label>
-          <input type="password" id="password" v-model="password" placeholder="비밀번호를 입력하세요" />
-        </div>
+          <div class="input-group">
+            <label for="password">비밀번호</label>
+            <input 
+              type="password" 
+              id="password" 
+              v-model="password" 
+              placeholder="비밀번호를 입력하세요" 
+            />
+          </div>
 
-        <BaseButton @click="login" type="primary">로그인</BaseButton>
-        <BaseButton @click="$router.push('/signup')" type="outline">회원가입</BaseButton>
+          <BaseButton type="primary" :disabled="isLoggingIn">
+            {{ isLoggingIn ? '로그인 중...' : '로그인' }}
+          </BaseButton>
+        </form>
+
+        <BaseButton @click="$router.push('/signup')" type="outline" style="margin-top: 10px;">회원가입</BaseButton>
 
         <router-link to="/forgot-password" class="footer-text">비밀번호를 잊으셨나요?</router-link>
       </div>
@@ -29,61 +44,91 @@
 </template>
 
 <script>
+import axios from 'axios';
 import BaseButton from '../components/BaseButton.vue';
-import TheHeader from '../components/TheHeader.vue'; // 헤더 컴포넌트 추가
+import TheHeader from '../components/TheHeader.vue';
 
 export default {
-  emits: ['show-modal'],
   components: {
     BaseButton,
-    TheHeader // 헤더 컴포넌트 등록
+    TheHeader
   },
   data() {
     return {
       identifier: '',
       password: '',
+      isLoggingIn: false
     };
   },
-// <script> 부분의 methods를 이렇게 수정하세요
+  methods: {
+    async login() {
+      if (!this.identifier || !this.password) {
+        alert('아이디와 비밀번호를 모두 입력해주세요.');
+        return;
+      }
 
-methods: {
-  login() {
-    console.log('로그인 시도:', this.identifier, this.password);
+      this.isLoggingIn = true;
 
-    // [수정됨] 로그인 성공 시 브라우저에 저장 (임시 토큰 역할)
-    localStorage.setItem('isLoggedIn', 'true'); 
-    localStorage.setItem('userName', '홍길동'); // 사용자 이름 예시
+      try {
+        const response = await axios.post('/api/auth/login', {
+          username: this.identifier,
+          email: this.identifier,
+          password: this.password
+        });
 
-    const isFirstLogin = true; 
-    const userType = 'teacher'; 
+        // [수정] role 변수를 꺼내서 아래에서 저장하도록 변경
+        const { access_token, name, role } = response.data;
 
-    if (isFirstLogin && userType === 'teacher') {
-      this.$router.push('/onboarding');
-    } else {
-      this.$router.push('/'); // 홈으로 이동
+        console.log('로그인 성공:', response.data);
+
+        // 브라우저 저장
+        localStorage.setItem('isLoggedIn', 'true');
+        if (access_token) localStorage.setItem('token', access_token);
+        
+        // [수정] role이 있다면 저장 (에러 해결!)
+        if (role) {
+          localStorage.setItem('userRole', role);
+        }
+
+        if (name) {
+          localStorage.setItem('userName', name);
+        } else {
+          localStorage.setItem('userName', this.identifier.split('@')[0]); 
+        }
+
+        this.$router.push('/');
+
+      } catch (error) {
+        console.error('로그인 에러:', error);
+        
+        if (error.response && error.response.status === 401) {
+          alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+        } else {
+          alert('로그인 중 오류가 발생했습니다.');
+        }
+      } finally {
+        this.isLoggingIn = false;
+      }
     }
   }
-}
 }
 </script>
 
 <style scoped>
-/* 새롭게 변경된 레이아웃 스타일 */
+/* 스타일 유지 */
 .auth-layout {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px 20px; /* 헤더 아래 여백 */
-  min-height: calc(100vh - 75px); /* 헤더 높이를 제외한 전체 높이 */
-  background-color: #f8f9fa; /* 순백색(#fff) 대신 아주 연한 회색 배경 */
+  padding: 60px 20px;
+  min-height: calc(100vh - 75px);
+  background-color: #f8f9fa;
 }
-
-/* 기존 카드 스타일은 거의 그대로 유지 (그림자 효과가 흰색 카드와 배경을 구분해줌) */
 .login-card {
   width: 100%;
   max-width: 420px;
   padding: 40px;
-  background-color: white; /* 카드는 순백색 */
+  background-color: white;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   text-align: center;

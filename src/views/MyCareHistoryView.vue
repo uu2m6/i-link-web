@@ -54,13 +54,13 @@
 <script>
 import BaseButton from '../components/BaseButton.vue';
 import TheHeader from '../components/TheHeader.vue';
-// import axios from 'axios';
+
 
 export default { 
   components: { BaseButton, TheHeader },
   data() {
     return {
-      // [데이터] 백엔드에서 받아올 때 hasReview(후기작성여부) 필드가 있어야 합니다.
+    
       careHistory: [
         { 
           id: 1, 
@@ -78,7 +78,7 @@ export default {
           statusText: '종료됨', 
           statusClass: 'completed',
           period: '2025.09.15 ~ 2025.09.30',
-          hasReview: false // 아직 안 씀
+          hasReview: false 
         }
       ],
       reviewForm: {
@@ -98,7 +98,7 @@ export default {
   },
   methods: {
     openReviewForm(careId) {
-      // 폼 초기화 후 열기
+     
       this.reviewForm = {
         visible: true,
         targetId: careId,
@@ -114,20 +114,17 @@ export default {
       this.reviewForm.ratings[categoryKey] = rating;
     },
     async submitReview(careId) {
-      // 유효성 검사
+     
       if (!this.reviewForm.text) {
         alert('후기 내용을 입력해주세요.');
         return;
       }
 
       try {
-        // [API 연동 시] 
-        // await axios.post('/api/reviews', { match_id: careId, ...this.reviewForm });
         
         console.log('후기 전송:', careId, this.reviewForm);
-        alert('소중한 후기가 등록되었습니다.');
+        alert('후기가 등록되었습니다.');
 
-        // [핵심] 화면 갱신: 해당 아이템의 hasReview를 true로 변경
         const targetItem = this.careHistory.find(item => item.id === careId);
         if (targetItem) {
           targetItem.hasReview = true;
@@ -155,7 +152,6 @@ h1 { font-size: 28px; margin-bottom: 30px; }
 .status.completed { color: #868e96; background-color: #f1f3f5; }
 .item-period { font-size: 14px; color: #868e96; }
 
-/* 리뷰 폼 스타일 */
 .review-button-wrapper { margin-top: 20px; text-align: right; }
 .review-completed-wrapper { margin-top: 20px; text-align: right; color: #4CAF50; font-weight: bold; }
 hr { border: none; border-top: 1px solid #f1f3f5; margin: 25px 0; }

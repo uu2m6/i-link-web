@@ -76,7 +76,7 @@ export default {
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-        // 1. 로그인 요청
+       
         const response = await axios.post('/api/auth/token', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -84,10 +84,10 @@ export default {
           }
         });
 
-        // 2. 데이터 분해
+       
         const { access_token, role, name, user_id } = response.data;
 
-        // 3. [핵심] 죽어도 일단 실행해봄 (저장 시도)
+        
         try {
           localStorage.setItem('isLoggedIn', 'true');
           if (access_token) localStorage.setItem('token', access_token);
@@ -100,9 +100,9 @@ export default {
           console.error('저장소 에러 무시함:', e);
         }
 
-        // 4. [강제 이동] Vue 라우터가 아니라 브라우저 자체를 이동시킴
-        alert('로그인 성공! 홈으로 이동합니다.'); // 성공 확인용 알림
-        window.location.href = '/'; // <--- 이게 "핵폭탄" 코드입니다. 무조건 이동합니다.
+        
+        alert('로그인 성공! 홈으로 이동합니다.'); 
+        window.location.href = '/'; 
 
       } catch (error) {
         console.error('로그인 에러:', error);
@@ -127,7 +127,6 @@ export default {
 </script>
 
 <style scoped>
-/* 기존 스타일 그대로 유지 */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .login-card { width: 100%; max-width: 420px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; }

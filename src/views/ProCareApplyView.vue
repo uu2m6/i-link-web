@@ -170,7 +170,7 @@ const handleSubmit = () => {
   overflow: hidden;
 }
 
-/* 헤더 스타일 */
+
 .form-header {
   padding: 40px 30px;
   text-align: center;
@@ -191,7 +191,6 @@ const handleSubmit = () => {
   line-height: 1.5;
 }
 
-/* 폼 본문 */
 .form-body {
   padding: 30px;
 }
@@ -212,7 +211,7 @@ const handleSubmit = () => {
   display: block;
 }
 
-/* 그리드 레이아웃 */
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -222,7 +221,6 @@ const handleSubmit = () => {
   grid-column: span 2;
 }
 
-/* 입력 필드 공통 */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -246,7 +244,7 @@ input:focus, select:focus, textarea:focus {
 }
 textarea { resize: vertical; }
 
-/* 프로필 사진 업로더 */
+
 .profile-uploader {
   display: flex;
   align-items: center;
@@ -271,7 +269,7 @@ input[type="file"] { display: none; }
 }
 .btn-upload:hover { background-color: #e9ecef; }
 
-/* 자격증 동적 입력 */
+
 .dynamic-input-group {
   display: flex;
   gap: 10px;
@@ -299,7 +297,7 @@ input[type="file"] { display: none; }
 }
 .btn-add:hover { border-color: #FBBF24; color: #F59E0B; }
 
-/* 체크박스 그룹 */
+
 .checkbox-group {
   display: flex;
   flex-wrap: wrap;
@@ -317,7 +315,7 @@ input[type="file"] { display: none; }
 }
 .checkbox-group input { margin-right: 8px; }
 
-/* 하단 버튼 */
+
 .form-footer { margin-top: 30px; text-align: center; }
 .btn-submit {
   background-color: #FBBF24;
@@ -333,7 +331,7 @@ input[type="file"] { display: none; }
 }
 .btn-submit:hover { background-color: #F59E0B; transform: translateY(-2px); }
 
-/* 모바일 대응 */
+
 @media (max-width: 600px) {
   .form-grid { grid-template-columns: 1fr; }
   .full-width { grid-column: auto; }

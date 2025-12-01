@@ -95,7 +95,7 @@ export default {
   components: { BaseButton, TheHeader },
   data() {
     return {
-      // 라우트 파라미터 ID에 따라 데이터를 가져왔다고 가정
+    
       teacher: {
         id: this.$route.params.id,
         name: '김선생님',
@@ -118,7 +118,7 @@ export default {
   },
   methods: {
     startMatching() {
-      // TODO: 백엔드 API 연동
+
       if (confirm(`${this.teacher.name} 선생님에게 매칭을 신청하시겠습니까?`)) {
         alert('신청이 완료되었습니다! 내역 페이지로 이동합니다.');
         this.$router.push('/history');
@@ -132,7 +132,7 @@ export default {
 .profile-page {
   background-color: #f8f9fa;
   min-height: 100vh;
-  padding-bottom: 100px; /* 하단 액션바 공간 확보 */
+  padding-bottom: 100px;
 }
 
 .profile-container {
@@ -141,7 +141,7 @@ export default {
   padding: 30px 20px;
 }
 
-/* 1. 프로필 헤더 카드 */
+
 .profile-header-card {
   background-color: white;
   border-radius: 20px;
@@ -216,7 +216,6 @@ export default {
   border: 1px solid #FCD34D;
 }
 
-/* 2. 그리드 레이아웃 (정보 카드) */
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -269,7 +268,7 @@ export default {
   font-weight: 700;
 }
 
-/* 3. 공통 카드 스타일 (소개글, 후기) */
+
 .card-style {
   background-color: white;
   border-radius: 20px;
@@ -289,10 +288,10 @@ export default {
 .intro-text {
   line-height: 1.6;
   color: #555;
-  white-space: pre-line; /* 줄바꿈 반영 */
+  white-space: pre-line; 
 }
 
-/* 후기 섹션 */
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -314,7 +313,6 @@ export default {
   font-style: italic;
 }
 
-/* 4. 하단 고정 액션바 */
 .bottom-action-bar {
   position: fixed;
   bottom: 0;
@@ -324,9 +322,9 @@ export default {
   padding: 20px;
   box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
   display: flex;
-  justify-content: center; /* 가운데 정렬을 위해 수정 */
+  justify-content: center; 
   align-items: center;
-  gap: 20px; /* 텍스트와 버튼 사이 간격 */
+  gap: 20px; 
   box-sizing: border-box;
   z-index: 1000;
 }
@@ -370,7 +368,7 @@ export default {
     grid-template-columns: 1fr;
   }
   .bottom-action-bar {
-    justify-content: space-between; /* 모바일에서는 양끝 정렬 */
+    justify-content: space-between; 
   }
 }
 </style>

@@ -65,7 +65,7 @@ export default {
   },
   data() {
     return {
-      isLoggedIn: false, // 로그인 상태 확인용 변수
+      isLoggedIn: false, 
       userName: '',
       recommendedTeachers: [
         { id: 1, name: '김선생님', tags: '#실내놀이 #영어' },
@@ -77,7 +77,7 @@ export default {
       ]
     };
   },
-  // [추가됨] 페이지가 열릴 때 로그인 여부 확인
+ 
   mounted() {
     const checkLogin = localStorage.getItem('isLoggedIn');
     if (checkLogin === 'true') {
@@ -86,14 +86,14 @@ export default {
     }
   },
   methods: {
-    // [추가됨] 로그아웃 기능
+   
     logout() {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('userName');
       this.isLoggedIn = false;
       this.userName = '';
       alert('로그아웃 되었습니다.');
-      // 필요하면 페이지 새로고침
+     
       this.$router.go();
     }
   }
@@ -101,7 +101,7 @@ export default {
 </script>
 
 <style scoped>
-/* 기존 스타일 그대로 유지... */
+
 .home-page { background-color: #f8f9fa; }
 .main-container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
 .search-section .search-bar { width: 100%; max-width: 700px; margin: 0 auto 40px auto; background-color: white; border-radius: 50px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); padding: 8px; cursor: pointer; transition: transform 0.2s; }
@@ -123,7 +123,7 @@ export default {
 .login-block p { font-size: 16px; margin-bottom: 20px; line-height: 1.6; }
 .ad-block { display: flex; justify-content: center; align-items: center; min-height: 200px; color: #adb5bd; }
 
-/* [추가됨] 로그인 후 사용자 정보 카드 스타일 */
+
 .user-info-block {
   background-color: white;
   border-radius: 15px;
@@ -152,7 +152,7 @@ export default {
 }
 .logout-link:hover { color: #333; }
 
-/* 모바일 반응형 */
+
 @media (max-width: 900px) {
   .content-grid { grid-template-columns: 1fr; }
   .sidebar-section { display: none; }

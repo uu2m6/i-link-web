@@ -44,7 +44,6 @@
 <script>
 import BaseButton from '../components/BaseButton.vue';
 import TheHeader from '../components/TheHeader.vue';
-// import axios from 'axios';
 
 export default {
   components: { BaseButton, TheHeader },
@@ -52,13 +51,12 @@ export default {
     return {
       newPassword: '',
       confirmPassword: '',
-      token: '', // URL에서 받아올 토큰
+      token: '',
       errorMessage: '',
       isLoading: false
     };
   },
   created() {
-    // 1. URL 파라미터에서 토큰 추출 (?token=...)
     this.token = this.$route.query.token;
     
     if (!this.token) {
@@ -68,7 +66,6 @@ export default {
   },
   methods: {
     async resetPassword() {
-      // 유효성 검사
       if (this.newPassword.length < 6) {
         this.errorMessage = '비밀번호는 6자 이상이어야 합니다.';
         return;
@@ -82,14 +79,7 @@ export default {
       this.errorMessage = '';
 
       try {
-        // [백엔드 요청]
-        // 토큰과 새 비밀번호를 함께 보냅니다.
-        // await axios.post('/api/auth/reset-password', {
-        //   token: this.token,
-        //   newPassword: this.newPassword
-        // });
-
-        // 테스트용 지연
+    
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         alert('비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.');
@@ -106,7 +96,7 @@ export default {
 </script>
 
 <style scoped>
-/* 전체 레이아웃 (LoginView와 통일) */
+
 .auth-layout {
   display: flex;
   justify-content: center;
@@ -126,13 +116,13 @@ export default {
   text-align: center;
 }
 
-/* 로고 및 타이틀 */
+
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; }
 .logo-icon { font-size: 38px; margin-right: 10px; }
 .logo-text { font-size: 32px; font-weight: 800; color: #333; }
 .tagline { font-size: 16px; color: #666; margin-bottom: 30px; line-height: 1.5; }
 
-/* 입력 폼 스타일 */
+
 .input-group { text-align: left; margin-bottom: 20px; }
 .input-group label { display: block; font-size: 14px; color: #555; margin-bottom: 8px; font-weight: 600; }
 .input-group input { 
@@ -150,7 +140,6 @@ export default {
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2); 
 }
 
-/* 에러 메시지 */
 .error-text {
   color: #e53935;
   font-size: 13px;

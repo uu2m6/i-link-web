@@ -64,7 +64,7 @@ export default {
     },
     submitDocuments() {
       if (!this.selectedFile) {
-        // 모달 대신 alert 사용 예시 (기존 로직 유지)
+      
         alert('파일을 먼저 선택해주세요.');
         return;
       }
@@ -73,7 +73,7 @@ export default {
       this.$router.push('/home');
     },
     
-    // [추가됨] 건너뛰기 기능
+
     skipOnboarding() {
       if (confirm('자격 증명을 나중에 하시겠습니까?\n인증되지 않은 상태에서는 일부 활동이 제한될 수 있습니다.')) {
         this.$router.push('/home');
@@ -84,7 +84,7 @@ export default {
 </script>
 
 <style scoped>
-/* 로그인/회원가입과 동일한 레이아웃 스타일 */
+
 .auth-layout {
   display: flex;
   justify-content: center;
@@ -94,7 +94,7 @@ export default {
   background-color: #f8f9fa;
 }
 
-/* 카드 스타일 */
+
 .onboarding-card {
   width: 100%;
   max-width: 480px;
@@ -118,7 +118,7 @@ export default {
 .file-name { font-size: 16px; font-weight: 600; color: #333; margin: 10px 0; word-break: break-all; }
 .file-change-hint { font-size: 13px; color: #aaa; }
 
-/* [추가됨] 건너뛰기 버튼 스타일 */
+
 .skip-area {
   margin-top: 20px;
 }

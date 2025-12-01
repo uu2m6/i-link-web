@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     goHome() {
-      // [수정] 불필요한 변수 선언 삭제 -> 바로 홈으로 이동
+    
       this.$router.push('/'); 
     }
   }

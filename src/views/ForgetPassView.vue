@@ -45,7 +45,6 @@
 <script>
 import BaseButton from '../components/BaseButton.vue';
 import TheHeader from '../components/TheHeader.vue';
-// import axios from 'axios';
 
 export default {
   components: { BaseButton, TheHeader },
@@ -65,10 +64,7 @@ export default {
       this.message = '';
       
       try {
-        // [백엔드 요청]
-        // await axios.post('/api/auth/forgot-password-link', { email: this.email });
-
-        // 테스트용 지연
+        
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         this.message = '이메일로 비밀번호 재설정 링크가 발송되었습니다. 메일함을 확인해주세요.';
@@ -85,7 +81,7 @@ export default {
 </script>
 
 <style scoped>
-/* ResetPassView와 동일한 레이아웃 */
+
 .auth-layout {
   display: flex;
   justify-content: center;
@@ -127,7 +123,7 @@ export default {
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2); 
 }
 
-/* 성공/실패 메시지 스타일 */
+
 .message-text {
   margin-top: 20px;
   padding: 15px;
@@ -144,7 +140,6 @@ export default {
   color: #C62828;
 }
 
-/* 하단 링크 */
 .footer-links { margin-top: 30px; }
 .footer-text { font-size: 14px; color: #888; text-decoration: none; }
 .footer-text:hover { color: #FBBF24; text-decoration: underline; }

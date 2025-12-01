@@ -199,7 +199,7 @@ h3 {
   margin-bottom: 12px;
   color: #333;
   font-weight: 700;
-  border-left: 4px solid #FBBF24; /* 포인트 컬러 */
+  border-left: 4px solid #FBBF24;
   padding-left: 10px;
 }
 p {

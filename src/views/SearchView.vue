@@ -82,7 +82,6 @@ export default {
       keyword: '',
       recommendTags: ['등하원', '영어놀이', '미술', '강남구', '신생아'],
       
-      // 임시 더미 데이터 (나중에 백엔드 API로 대체)
       allTeachers: [
         { id: 1, name: '김선생님', location: '서울 강남구', rating: 4.8, wage: 15000, tags: ['#실내놀이', '#영어'] },
         { id: 2, name: '이선생님', location: '서울 서초구', rating: 4.9, wage: 14000, tags: ['#등하원', '#책읽기'] },
@@ -95,7 +94,6 @@ export default {
     };
   },
   created() {
-    // 초기에는 전체 리스트 보여주기
     this.filteredList = this.allTeachers;
   },
   methods: {
@@ -105,7 +103,6 @@ export default {
         return;
       }
       
-      // 간단한 필터링 로직 (이름, 지역, 태그 검색)
       const term = this.keyword.trim();
       this.filteredList = this.allTeachers.filter(t => 
         t.name.includes(term) || 
@@ -129,7 +126,6 @@ export default {
   padding: 40px 20px;
 }
 
-/* 1. 검색 헤더 스타일 */
 .search-header {
   text-align: center;
   margin-bottom: 40px;
@@ -200,7 +196,6 @@ export default {
   background-color: #FFFBEB;
 }
 
-/* 2. 결과 영역 스타일 */
 .results-header {
   display: flex;
   justify-content: space-between;
@@ -224,7 +219,7 @@ export default {
   outline: none;
 }
 
-/* 그리드 레이아웃 */
+
 .results-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -319,7 +314,7 @@ export default {
   text-align: right;
 }
 
-/* 결과 없음 스타일 */
+
 .no-result {
   text-align: center;
   padding: 80px 0;
@@ -333,7 +328,6 @@ export default {
   line-height: 1.6;
 }
 
-/* 모바일 반응형 */
 @media (max-width: 600px) {
   .results-grid {
     grid-template-columns: 1fr;

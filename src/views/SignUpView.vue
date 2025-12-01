@@ -418,7 +418,7 @@ export default {
         if (!this.parentInfo.wage) return false;
         if (this.parentInfo.careTypes.length === 0) return false;
       } 
-      // [수정] teacher -> sitter
+     
       else if (this.userType === 'sitter') {
         if (!this.teacherInfo.experienceYear) return false;
         if (!this.teacherInfo.experienceDesc) return false;
@@ -452,7 +452,7 @@ export default {
         return;
       }
       
-      // [수정] teacher -> sitter
+     
       if (this.userType === 'sitter') {
         this.teacherInfo.certifications = this.teacherInfo.certifications.filter(c => c.trim() !== '');
       }
@@ -478,7 +478,7 @@ export default {
           email: this.identifier,
           password1: this.password,
           password2: this.confirmPassword,
-          role: this.userType, // sitter 전송
+          role: this.userType,
           address: fullAddress,
 
           children: this.userType === 'parent' ? this.parentInfo.numChildren : null,
@@ -489,7 +489,6 @@ export default {
           
           hope_pay: numericWage,
           
-          // [수정] teacher -> sitter
           activities: this.userType === 'sitter' ? this.teacherInfo.activities : null,
           hope_regions: this.userType === 'sitter' ? this.teacherInfo.selectedRegions : null,
           pay_period: this.userType === 'sitter' ? this.teacherInfo.paymentCycles : null,
@@ -541,7 +540,6 @@ export default {
 </script>
 
 <style scoped>
-/* (스타일은 그대로 유지) */
 .auth-layout { display: flex; justify-content: center; align-items: center; padding: 60px 20px; min-height: calc(100vh - 75px); background-color: #f8f9fa; }
 .signup-card { width: 100%; max-width: 560px; padding: 40px; background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
 .logo { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }

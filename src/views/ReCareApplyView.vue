@@ -139,7 +139,6 @@ export default {
   overflow: hidden;
 }
 
-/* 헤더 */
 .form-header {
   padding: 40px 30px 20px;
   text-align: center;
@@ -156,7 +155,7 @@ export default {
   line-height: 1.5;
 }
 
-/* 폼 본문 */
+
 .form-body { padding: 30px; }
 
 .form-section {
@@ -172,7 +171,7 @@ export default {
   padding: 0 10px;
 }
 
-/* 그리드 */
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -180,7 +179,6 @@ export default {
 }
 .full-width { grid-column: span 2; }
 
-/* 입력 필드 */
 .form-group { display: flex; flex-direction: column; }
 label {
   font-size: 14px;
@@ -200,7 +198,7 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
 }
 
-/* 라디오 버튼 그룹 (성별) */
+
 .radio-group .checkbox-group {
   display: flex;
   gap: 20px;
@@ -213,7 +211,7 @@ input:focus, select:focus, textarea:focus {
 }
 .radio-group input { margin-right: 6px; }
 
-/* 하단 버튼 */
+
 .form-footer { margin-top: 10px; text-align: center; }
 .btn-submit {
   width: 100%;

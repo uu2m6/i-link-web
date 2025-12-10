@@ -9,6 +9,9 @@
       <router-link to="/customer-service">고객센터</router-link>
       <span>|</span>
       <router-link to="/terms">이용규정</router-link>
+      
+      <span>|</span>
+      <a @click="goToEditPage">내 정보 수정</a>
     </nav>
   </header>
 </template>
@@ -21,8 +24,32 @@ export default {
   },
   methods: {
     goHome() {
-    
       this.$router.push('/'); 
+    },
+    // [추가] 내 정보 수정 페이지 이동 로직
+    goToEditPage() {
+      // 1. 로그인 정보 확인
+      const userStr = localStorage.getItem('user');
+      
+      // 로그인이 안 되어 있다면 로그인 페이지로 이동
+      if (!userStr) {
+        alert('로그인이 필요한 서비스입니다.');
+        this.$router.push('/login');
+        return;
+      }
+
+      // 2. 유저 타입(학부모/선생님)에 따라 다른 페이지로 이동
+      try {
+        const user = JSON.parse(userStr);
+        if (user.type === 'teacher') {
+          this.$router.push('/profile/edit/teacher'); // 선생님용 수정 페이지
+        } else {
+          this.$router.push('/profile/edit/parent');  // 학부모용 수정 페이지
+        }
+      } catch (e) {
+        console.error('유저 정보 파싱 오류', e);
+        this.$router.push('/login');
+      }
     }
   }
 }

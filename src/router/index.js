@@ -13,6 +13,8 @@ import ResetPassView from '../views/ResetPassView.vue';
 import CustomerServiceView from '../views/CustomerServiceView.vue';
 import TermsView from '../views/TermsView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
+import ParentProfileEdit from '../views/ParentProfileEdit.vue';
+import TeacherProfileEdit from '../views/TeacherProfileEdit.vue';
 
 const routes = [
   
@@ -31,7 +33,9 @@ const routes = [
   { path: '/reset-password', name: 'ResetPassView', component: ResetPassView },
   { path: '/customer-service', name: 'customer-service', component: CustomerServiceView },
   { path: '/terms', name: 'terms', component: TermsView },
-  { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView }
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
+  { path: '/profile/edit/parent', name: 'ParentProfileEdit', component: ParentProfileEdit },
+  { path: '/profile/edit/teacher', name: 'TeacherProfileEdit', component: TeacherProfileEdit }
 ];
 
 const router = createRouter({

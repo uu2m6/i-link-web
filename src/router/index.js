@@ -16,6 +16,7 @@ import NotFoundView from '@/views/NotFoundView.vue';
 import ParentProfileEdit from '../views/ParentProfileEdit.vue';
 import TeacherProfileEdit from '../views/TeacherProfileEdit.vue';
 import TeacherHomeView from '@/views/TeacherHomeView.vue';
+import TeacherRequestDetailView from '../views/TeacherRequestDetailView.vue';
 
 const routes = [
   
@@ -37,8 +38,10 @@ const routes = [
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   { path: '/profile/edit/parent', name: 'ParentProfileEdit', component: ParentProfileEdit },
   { path: '/profile/edit/teacher', name: 'TeacherProfileEdit', component: TeacherProfileEdit },
-   { path: '/teacher-home', name: 'TeacherHome', component: TeacherHomeView }
-];
+   { path: '/teacher-home', name: 'TeacherHome', component: TeacherHomeView },
+   { path: '/teacher/request/:id', name: 'TeacherRequestDetail', component: TeacherRequestDetailView },
+
+  ];
 
 const router = createRouter({
   history: createWebHistory(),

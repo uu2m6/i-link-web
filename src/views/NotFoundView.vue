@@ -3,9 +3,26 @@
     <div class="icon">🤔</div>
     <h1>길을 잃으셨나요?</h1>
     <p>요청하신 페이지를 찾을 수 없습니다.</p>
-    <button @click="$router.push('/')" class="home-btn">홈으로 돌아가기</button>
+    <button @click="goHome" class="home-btn">홈으로 돌아가기</button>
   </div>
 </template>
+
+<script>
+export default {
+  methods: {
+    goHome() {
+      // 로그인한 유저의 역할(role)을 확인합니다.
+      const userRole = localStorage.getItem('userRole');
+
+      if (userRole === 'sitter') {
+        this.$router.push('/teacher-home'); // 선생님이면 선생님 홈으로
+      } else {
+        this.$router.push('/'); // 그 외엔 기본 홈(학부모 홈)으로
+      }
+    }
+  }
+}
+</script>
 
 <style scoped>
 .not-found {

@@ -154,7 +154,23 @@ export default {
 
 
 @media (max-width: 900px) {
-  .content-grid { grid-template-columns: 1fr; }
-  .sidebar-section { display: none; }
+  
+  .content-grid {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 20px;
+  }
+
+  .sidebar-section {
+    display: block; 
+  }
+
+  .ad-block { display: none; } 
+  
+
+  .login-block, .user-info-block {
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 </style>

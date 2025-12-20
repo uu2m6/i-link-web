@@ -9,9 +9,14 @@
           <p>오늘도 아이들과 함께 행복한 시간을 만들어보세요.</p>
         </div>
         
-        <button class="btn-edit-profile" @click="$router.push('/profile/edit/teacher')">
-          ✏️ 내 정보 수정
-        </button>
+        <div class="banner-actions">
+          <button class="btn-edit-profile" @click="$router.push('/profile/edit/teacher')">
+            ✏️ 내 정보 수정
+          </button>
+          <button class="btn-logout" @click="logout">
+            🚪 로그아웃
+          </button>
+        </div>
       </section>
 
       <section class="request-section">
@@ -79,7 +84,6 @@ export default {
           time: '10:00 (4시간)',
           pay: 60000
         },
-        // [테스트용] 카드가 가로로 잘 뜨는지 확인하기 위해 더미 데이터 추가
         {
           id: 3,
           isNew: false,
@@ -111,6 +115,13 @@ export default {
     },
     goToDetail(id) {
       this.$router.push(`/teacher/request/${id}`);
+    },
+    logout() {
+      if(confirm('로그아웃 하시겠습니까?')) {
+        localStorage.clear();
+        alert('로그아웃 되었습니다.');
+        this.$router.push('/login');
+      }
     }
   }
 };
@@ -118,13 +129,7 @@ export default {
 
 <style scoped>
 .home-container { background-color: #f8f9fa; min-height: 100vh; }
-
-/* [수정 1] 컨테이너 너비를 600px -> 1200px로 넓힘 */
-.main-content { 
-  max-width: 1200px; 
-  margin: 0 auto; 
-  padding: 20px; 
-}
+.main-content { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
 .welcome-banner {
   background-color: #4CAF50;
@@ -141,7 +146,12 @@ export default {
 .welcome-banner h2 { font-size: 1.5rem; margin-bottom: 10px; font-weight: 800; }
 .welcome-banner p { font-size: 1rem; opacity: 0.9; }
 
-.btn-edit-profile {
+.banner-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-edit-profile, .btn-logout {
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -153,7 +163,14 @@ export default {
   white-space: nowrap;
   transition: background 0.2s;
 }
+
 .btn-edit-profile:hover { background-color: rgba(255, 255, 255, 0.3); }
+
+.btn-logout {
+  background-color: rgba(0, 0, 0, 0.1); 
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.btn-logout:hover { background-color: rgba(0, 0, 0, 0.2); }
 
 .request-section { margin-top: 20px; }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -162,10 +179,9 @@ export default {
 
 .empty-state { text-align: center; color: #aaa; padding: 40px; background: white; border-radius: 15px; }
 
-/* [수정 2] 그리드 설정: 한 줄에 3개씩 배치 (반응형) */
 .request-grid { 
   display: grid; 
-  grid-template-columns: repeat(3, 1fr); /* PC에서는 3개씩 */
+  grid-template-columns: repeat(3, 1fr); 
   gap: 20px; 
 }
 
@@ -191,10 +207,14 @@ export default {
 }
 .btn-check:hover { background-color: #e9ecef; }
 
-/* [수정 3] 모바일 화면(폭 900px 이하)에서는 다시 세로로 1개씩 보이게 설정 */
 @media (max-width: 900px) {
   .request-grid {
-    grid-template-columns: 1fr; /* 모바일: 1열 */
+    grid-template-columns: 1fr; 
+  }
+  .welcome-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
   }
 }
 </style>

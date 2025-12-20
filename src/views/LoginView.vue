@@ -96,11 +96,16 @@ export default {
           });
           
           const userData = meResponse.data;
-          if (userData.name) userName = userData.name;
+          
+          if (userData.name) {
+             userName = userData.name;
+          }
+          
           if (userData.role) userRole = userData.role;
           if (userData.id) localStorage.setItem('userId', userData.id);
 
         } catch (infoError) {
+          console.error(infoError);
           if (response.data.name) userName = response.data.name;
           if (response.data.role) userRole = response.data.role;
         }

@@ -15,6 +15,7 @@ import TermsView from '../views/TermsView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import ParentProfileEdit from '../views/ParentProfileEdit.vue';
 import TeacherProfileEdit from '../views/TeacherProfileEdit.vue';
+import TeacherHomeView from '@/views/TeacherHomeView.vue';
 
 const routes = [
   
@@ -35,7 +36,8 @@ const routes = [
   { path: '/terms', name: 'terms', component: TermsView },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   { path: '/profile/edit/parent', name: 'ParentProfileEdit', component: ParentProfileEdit },
-  { path: '/profile/edit/teacher', name: 'TeacherProfileEdit', component: TeacherProfileEdit }
+  { path: '/profile/edit/teacher', name: 'TeacherProfileEdit', component: TeacherProfileEdit },
+   { path: '/teacher-home', name: 'TeacherHome', component: TeacherHomeView }
 ];
 
 const router = createRouter({
@@ -46,17 +48,15 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
   
   const publicPages = ['/login', '/signup', '/forgot-password', '/reset-password', '/terms', '/customer-service'];
-  
-  
   const authRequired = !publicPages.includes(to.path);
 
   
   if (authRequired && !isLoggedIn) {
-    next('/login');
+    return next('/login');
   } 
  
   else if (isLoggedIn && (to.path === '/login' || to.path === '/signup')) {

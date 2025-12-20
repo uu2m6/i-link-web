@@ -38,9 +38,8 @@
         </form>
 
         <BaseButton @click="$router.push('/signup')" type="outline" style="margin-top: 10px;">회원가입</BaseButton>
-
-        <router-link to="/forgot-password" class="footer-text">비밀번호를 잊으셨나요?</router-link>
-      </div>
+        
+        </div>
     </main>
   </div>
 </template>
@@ -76,7 +75,6 @@ export default {
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-       
         const response = await axios.post('/api/auth/token', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -84,25 +82,29 @@ export default {
           }
         });
 
-       
         const { access_token, role, name, user_id } = response.data;
 
-        
         try {
           localStorage.setItem('isLoggedIn', 'true');
           if (access_token) localStorage.setItem('token', access_token);
           if (role) localStorage.setItem('userRole', role);
           if (user_id) localStorage.setItem('userId', user_id);
           
-          const userName = name ? name : this.identifier.split('@')[0];
+          // 아이디 대신 이름 저장
+          const userName = name || '회원'; 
           localStorage.setItem('userName', userName);
+
         } catch (e) {
           console.error('저장소 에러 무시함:', e);
         }
 
-        
-        alert('로그인 성공! 홈으로 이동합니다.'); 
-        window.location.href = '/'; 
+        alert(`${localStorage.getItem('userName')}님 환영합니다!`); 
+
+        if (role === 'sitter') {
+          this.$router.push('/teacher-home'); 
+        } else {
+          this.$router.push('/'); 
+        }
 
       } catch (error) {
         console.error('로그인 에러:', error);
@@ -137,6 +139,7 @@ export default {
 .input-group label { display: block; font-size: 14px; color: #555; margin-bottom: 8px; font-weight: 500; }
 .input-group input { width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; }
 .input-group input:focus { outline: none; border-color: #FFA726; box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.2); }
+/* .footer-text 스타일도 이제 사용하지 않으므로 삭제해도 되지만 남겨두어도 무방합니다. */
 .footer-text { font-size: 14px; color: #888; margin-top: 30px; cursor: pointer; text-decoration: none; display: inline-block; }
 .footer-text:hover { color: #FFA726; text-decoration: underline; }
 </style>

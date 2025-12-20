@@ -45,40 +45,51 @@
 </template>
 
 <script>
-// 1. 아까 만든 모달 불러오기
-import ReportModal from '@/components/ReportModal.vue'; 
+import ReportModal from '@/components/ReportModal.vue';
 
 export default {
-  components: { ReportModal }, // 컴포넌트 등록
+  components: { ReportModal },
   data() {
     return {
-      // 학부모가 보고 있는 선생님의 정보
-      teacher: { 
-        id: 1, // 신고할 때 식별하기 위해 ID가 필요합니다
-        name: '', 
-        contact: '', 
-        shortIntro: '', 
-        wage: 0, 
-        description: '' 
+      teacher: {
+        id: null,
+        name: '',
+        contact: '',
+        shortIntro: '',
+        wage: 0,
+        description: ''
       },
-      showReportModal: false // 모달 열림/닫힘 상태
+      showReportModal: false
     };
   },
-  mounted() {
-    // 실제로는 API로 선생님 ID를 조회해서 가져옵니다.
-    // 테스트를 위해 임시 데이터를 넣습니다.
-    this.teacher = {
-      id: 99,
-      name: '김선생',
-      contact: '010-1234-5678',
-      shortIntro: '아이들을 사랑합니다',
-      wage: 15000,
-      description: '안녕하세요. 꼼꼼하게 아이를 돌봐드리겠습니다.'
-    };
+  async mounted() {
+    const teacherId = this.$route.params.id;
+    if (teacherId) {
+      await this.fetchTeacherData(teacherId);
+    }
   },
   methods: {
+    async fetchTeacherData(id) {
+      try {
+        const response = await fetch(`/api/teachers/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('네트워크 응답에 문제가 발생했습니다.');
+        }
+
+        const data = await response.json();
+        this.teacher = data;
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+      }
+    },
     openReportModal() {
-      // 로그인 체크 로직을 여기에 넣을 수도 있습니다.
       this.showReportModal = true;
     }
   }

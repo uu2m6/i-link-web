@@ -41,30 +41,50 @@
           <div v-else-if="req.status === 'rejected'" class="info-msg rejected">
             ❌ 거절한 요청입니다.
           </div>
+
+          <div class="report-area">
+            <button class="btn-text-report" @click="openReportModal(req)">
+              🚨 학부모 신고하기
+            </button>
+          </div>
         </div>
         
         <div v-if="filteredRequests.length === 0" class="empty-state">
           <p>해당하는 신청 내역이 없습니다.</p>
         </div>
       </div>
+
+      <ReportModal 
+        :isVisible="reportModal.visible"
+        :targetName="reportModal.targetName"
+        :targetId="reportModal.targetId"
+        @close="closeReportModal"
+      />
     </main>
   </div>
 </template>
 
 <script>
 import TheHeader from '@/components/TheHeader.vue';
+import ReportModal from '@/components/ReportModal.vue';
 
 export default {
-  components: { TheHeader },
+  components: { TheHeader, ReportModal },
   data() {
     return {
       currentFilter: 'all',
-      // 선생님에게 들어온 신청 목록 (DB 데이터 예시)
+      // 신고 모달 상태
+      reportModal: {
+        visible: false,
+        targetName: '',
+        targetId: null
+      },
+      // 더미 데이터 (실제로는 API에서 가져옵니다)
       requests: [
         {
           id: 1,
           parentName: '이영희',
-          status: 'pending', // [중요] 대기 상태
+          status: 'pending',
           date: '2025.10.20',
           time: '14:00 (3시간)',
           location: '서울 강남구 역삼동',
@@ -74,7 +94,7 @@ export default {
         {
           id: 2,
           parentName: '박철수',
-          status: 'in-progress', // 이미 수락한 상태
+          status: 'in-progress',
           date: '2025.10.18',
           time: '10:00 (2시간)',
           location: '서울 서초구 반포동',
@@ -84,7 +104,7 @@ export default {
         {
           id: 3,
           parentName: '최민수',
-          status: 'rejected', // 거절한 상태
+          status: 'rejected',
           date: '2025.10.15',
           time: '09:00 (4시간)',
           location: '서울 송파구 잠실동',
@@ -95,7 +115,6 @@ export default {
     };
   },
   computed: {
-    // 탭 필터링 로직
     filteredRequests() {
       if (this.currentFilter === 'all') return this.requests;
       if (this.currentFilter === 'pending') return this.requests.filter(r => r.status === 'pending');
@@ -114,27 +133,40 @@ export default {
       return map[status] || status;
     },
     
-    // [기능] 수락하기 버튼 클릭 시
+    // 수락 로직
     handleAccept(id) {
       if (confirm('이 돌봄 신청을 수락하시겠습니까?')) {
-        // 실제로는 axios.post(`/api/request/${id}/accept`) 호출
         const target = this.requests.find(r => r.id === id);
         if (target) {
-          target.status = 'in-progress'; // 상태 변경 -> 학부모 화면에도 '진행중'으로 보이게 됨
+          target.status = 'in-progress'; 
           alert('신청을 수락했습니다! 학부모님께 알림이 전송됩니다.');
         }
       }
     },
 
-    // [기능] 거절하기 버튼 클릭 시
+    // 거절 로직
     handleReject(id) {
       if (confirm('정말 거절하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-        // 실제로는 axios.post(`/api/request/${id}/reject`) 호출
         const target = this.requests.find(r => r.id === id);
         if (target) {
           target.status = 'rejected';
+          alert('신청을 거절했습니다.');
         }
       }
+    },
+
+    // 신고 모달 열기
+    openReportModal(req) {
+      this.reportModal.targetName = req.parentName;
+      this.reportModal.targetId = req.id;
+      this.reportModal.visible = true;
+    },
+    
+    // 신고 모달 닫기
+    closeReportModal() {
+      this.reportModal.visible = false;
+      this.reportModal.targetName = '';
+      this.reportModal.targetId = null;
     }
   }
 };
@@ -146,7 +178,6 @@ export default {
 
 h1 { font-size: 1.5rem; margin-bottom: 20px; }
 
-/* 탭 스타일 */
 .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
 .tabs button {
   flex: 1; padding: 10px; border: none; background: #eee; border-radius: 8px;
@@ -154,12 +185,11 @@ h1 { font-size: 1.5rem; margin-bottom: 20px; }
 }
 .tabs button.active { background: #4CAF50; color: white; }
 
-/* 카드 스타일 */
 .request-card {
   background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eee;
 }
-.request-card.highlight { border: 2px solid #FF9800; } /* 대기중인 항목 강조 */
+.request-card.highlight { border: 2px solid #FF9800; }
 
 .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
 .parent-name { font-size: 1.1rem; font-weight: bold; }
@@ -175,7 +205,6 @@ h1 { font-size: 1.5rem; margin-bottom: 20px; }
   margin-top: 10px; font-style: italic; color: #666; 
 }
 
-/* 버튼 영역 */
 .action-buttons { display: flex; gap: 10px; margin-top: 20px; }
 .action-buttons button {
   flex: 1; padding: 12px; border: none; border-radius: 8px;
@@ -188,4 +217,24 @@ h1 { font-size: 1.5rem; margin-bottom: 20px; }
 
 .info-msg { margin-top: 15px; text-align: center; color: #4CAF50; font-weight: bold; font-size: 0.9rem; }
 .info-msg.rejected { color: #d32f2f; }
+
+/* 신고 버튼 스타일 */
+.report-area {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f3f5;
+  text-align: right;
+}
+.btn-text-report {
+  background: none;
+  border: none;
+  color: #ff4d4f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.btn-text-report:hover { color: #d32f2f; }
+
+.empty-state { text-align: center; padding: 40px 0; color: #888; }
 </style>

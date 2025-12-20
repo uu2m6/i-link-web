@@ -24,26 +24,38 @@
 
 <script>
 export default {
-  // 부모(화면)에서 받아올 데이터들
   props: ['isVisible', 'targetName', 'targetId'],
   data() {
     return { reason: '', details: '' }
   },
+  // [수정 핵심] watch를 추가하여 모달이 열릴 때마다 데이터를 초기화합니다.
+  watch: {
+    isVisible(newVal) {
+      if (newVal) {
+        this.reason = '';
+        this.details = '';
+      }
+    }
+  },
   methods: {
     submitReport() {
       if (!this.reason) return alert("사유를 선택해주세요!");
-      // 여기에 서버로 신고 전송하는 코드(axios)가 들어갑니다.
+      // 실제 API 연동 시 targetId와 함께 전송
+      console.log(`신고 대상 ID: ${this.targetId}, 사유: ${this.reason}, 내용: ${this.details}`);
+      
       alert(`${this.targetName}님에 대한 신고가 접수되었습니다.`);
-      this.$emit('close'); // 창 닫기
+      this.$emit('close'); 
     }
   }
 }
 </script>
 
 <style scoped>
-.modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; }
-.modal-card { background:white; padding:20px; border-radius:10px; width:300px; }
-.full-width { width: 100%; margin-bottom: 10px; padding: 5px; }
-.btn-red { background-color: #ff4d4f; color: white; border: none; }
-.btn-group { display: flex; justify-content: space-between; margin-top: 10px; }
+.modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index: 1000; }
+.modal-card { background:white; padding:20px; border-radius:10px; width:300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.full-width { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+.btn-red { background-color: #ff4d4f; color: white; border: none; font-weight: bold; }
+.btn-group { display: flex; justify-content: space-between; margin-top: 10px; gap: 10px; }
+.btn-group button { flex: 1; padding: 10px; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; background: white; }
+.btn-group .btn-red { border: none; }
 </style>

@@ -57,18 +57,19 @@
 
         <div v-if="userType === 'parent'" class="conditional-section">
           <p class="section-title">학부모님 정보 입력</p>
-          
-          <div class="input-group">
-            <label>아이 수 (명)</label>
-            <input 
-              type="number" 
-              v-model.number="parentInfo.numChildren" 
-              placeholder="숫자 입력 (예: 2)" 
-              min="1" 
-              max="10"
-              class="number-input"
-            >
-          </div>
+
+      <div class="input-group">
+         <label>아이 수 (명)</label>
+           <div class="counter-box">
+             <button type="button" class="counter-btn" @click="decreaseChildCount" :disabled="parentInfo.numChildren <= 1">
+      −
+     </button>
+     <span class="count-display">{{ parentInfo.numChildren }}명</span>
+      <button type="button" class="counter-btn" @click="increaseChildCount" :disabled="parentInfo.numChildren >= 10">
+      +
+    </button>
+  </div>
+</div>
 
           <div v-for="(child, index) in parentInfo.children" :key="index" class="child-info-box">
             <p class="child-info-title">{{ index + 1 }}번째 아이 정보</p>
@@ -368,6 +369,16 @@ export default {
     }
   },
   methods: {
+    decreaseChildCount() {
+      if (this.parentInfo.numChildren > 1) {
+        this.parentInfo.numChildren--;
+      }
+    },
+    increaseChildCount() {
+      if (this.parentInfo.numChildren < 10) {
+        this.parentInfo.numChildren++;
+      }
+    },
     addCertification() { this.teacherInfo.certifications.push(''); },
     removeCertification(index) { this.teacherInfo.certifications.splice(index, 1); },
     resetPasswordError() { this.passwordError = ''; },
@@ -608,4 +619,49 @@ hr { border: none; border-top: 1px solid #eee; margin: 30px 0; }
 .icon-btn.remove { background: #FFE5E5; border: 1px solid #FFCDCD; color: #D32F2F; border-radius: 8px; width: 45px; cursor: pointer; font-weight: bold; }
 .add-btn { width: 100%; padding: 12px; background-color: #f8f9fa; border: 1px dashed #ced4da; color: #868e96; border-radius: 10px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
 .add-btn:hover { border-color: #FBBF24; color: #F59E0B; background-color: #FFFBEB; }
+
+.counter-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  width: 160px; /* 너비 */
+  overflow: hidden;
+  background-color: white;
+}
+
+.counter-btn {
+  background-color: #f8f9fa;
+  border: none;
+  padding: 12px 18px;
+  font-size: 18px;
+  color: #555;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.counter-btn:hover:not(:disabled) {
+  background-color: #e9ecef;
+}
+
+.counter-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  background-color: #f1f3f5;
+}
+
+.count-display {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  flex: 1;
+  text-align: center;
+  user-select: none;
+}
+
+
 </style>

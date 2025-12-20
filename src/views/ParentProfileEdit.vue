@@ -31,13 +31,33 @@ export default {
     };
   },
   mounted() {
-    // API로 학부모 정보 불러오기 (Mock Data 예시)
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.form = { ...user };
+
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) {
+      this.$router.push('/login');
+      return;
+    }
+
+    try{
+     const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      this.form = { 
+        name: user.name || '', 
+        contact: user.contact || '', 
+        address: user.address || '' 
+      };
+    }
+  }
+    catch(e){
+      console.error('사용자 정보를 불러오는 중에 오류가 발생했습니다.:', e)
+    }
   },
+
   methods: {
     handleUpdate() {
-      // axios.put('/api/parent/me', this.form)...
       alert('학부모 정보가 수정되었습니다.');
       this.$router.push('/home');
     }
@@ -45,5 +65,4 @@ export default {
 };
 </script>
 <style scoped>
-/* 스타일은 기존 폼 스타일(form-page-container 등) 그대로 사용 */
 </style>

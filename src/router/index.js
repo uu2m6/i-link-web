@@ -65,7 +65,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-  // 로그인이 필요 없는 페이지 목록
   const publicPages = ['/login', '/signup', '/forgot-password', '/reset-password', '/terms', '/customer-service'];
   const authRequired = !publicPages.includes(to.path);
 

@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://2ef046bd38a7.ngrok-free.app/api/$1" 
+      "destination": "https://23c2abd4038a.ngrok-free.app/api/$1" 
     },
     {
       "source": "/(.*)",

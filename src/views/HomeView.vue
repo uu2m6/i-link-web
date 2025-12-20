@@ -32,16 +32,41 @@
 
         <aside class="sidebar-section">
           
+          <!-- 로그인 전 -->
           <div class="login-block" v-if="!isLoggedIn">
             <p>로그인하고<br>맞춤 정보를 확인하세요!</p>
-            <BaseButton @click="$router.push('/login')" type="primary">로그인 / 회원가입</BaseButton>
+            <BaseButton
+              type="primary"
+              @click="$router.push('/login')"
+            >
+              로그인 / 회원가입
+            </BaseButton>
           </div>
 
+          <!-- 로그인 후 (학부모) -->
           <div class="user-info-block" v-else>
-            <p class="welcome-msg">반가워요, <strong>{{ userName }}</strong>님! 👋</p>
+            <p class="welcome-msg">
+              반가워요, <strong>{{ userName }}</strong>님! 👋
+            </p>
+
             <div class="user-actions">
-              <BaseButton @click="$router.push('/history')" type="secondary">내 돌봄 내역</BaseButton>
-              <button class="logout-link" @click="logout">로그아웃</button>
+              <BaseButton
+                type="secondary"
+                @click="$router.push('/history')"
+              >
+                내 돌봄 내역
+              </BaseButton>
+
+              <BaseButton
+                type="outline"
+                @click="$router.push('/profile/edit/parent')"
+              >
+                프로필 수정
+              </BaseButton>
+
+              <button class="logout-link" @click="logout">
+                로그아웃
+              </button>
             </div>
           </div>
 
@@ -55,8 +80,8 @@
 </template>
 
 <script>
-import BaseButton from '../components/BaseButton.vue';
-import TheHeader from '../components/TheHeader.vue';
+import BaseButton from '../components/BaseButton.vue'
+import TheHeader from '../components/TheHeader.vue'
 
 export default {
   components: {
@@ -65,7 +90,7 @@ export default {
   },
   data() {
     return {
-      isLoggedIn: false, 
+      isLoggedIn: false,
       userName: '',
       recommendedTeachers: [
         { id: 1, name: '김선생님', tags: '#실내놀이 #영어' },
@@ -73,104 +98,27 @@ export default {
         { id: 3, name: '박선생님', tags: '#학습지도 #한글' },
         { id: 4, name: '최선생님', tags: '#야외활동 #미술' },
         { id: 5, name: '정선생님', tags: '#신생아 #실내놀이' },
-        { id: 6, name: '강선생님', tags: '#등하원 #영어놀이' },
+        { id: 6, name: '강선생님', tags: '#등하원 #영어놀이' }
       ]
-    };
+    }
   },
- 
   mounted() {
-    const checkLogin = localStorage.getItem('isLoggedIn');
-    if (checkLogin === 'true') {
-      this.isLoggedIn = true;
-      this.userName = localStorage.getItem('userName') || '회원';
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      this.isLoggedIn = true
+      this.userName = localStorage.getItem('userName') || '회원'
     }
   },
   methods: {
-   
     logout() {
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userName');
-      this.isLoggedIn = false;
-      this.userName = '';
-      alert('로그아웃 되었습니다.');
-     
-      this.$router.go();
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('userName')
+      localStorage.removeItem('user')
+      alert('로그아웃 되었습니다.')
+      this.$router.go()
     }
   }
 }
 </script>
 
 <style scoped>
-
-.home-page { background-color: #f8f9fa; }
-.main-container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
-.search-section .search-bar { width: 100%; max-width: 700px; margin: 0 auto 40px auto; background-color: white; border-radius: 50px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); padding: 8px; cursor: pointer; transition: transform 0.2s; }
-.search-section .search-bar:hover { transform: scale(1.02); }
-.search-section input { width: 100%; border: none; padding: 15px 25px; border-radius: 50px; font-size: 18px; background-color: transparent; cursor: pointer; }
-.search-section input:focus { outline: none; }
-.content-grid { display: grid; grid-template-columns: 3fr 1fr; gap: 30px; }
-.recommendation-section h2 { font-size: 24px; font-weight: 700; margin-bottom: 25px; }
-.recommendation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-.teacher-card { background-color: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; width: 100%; height: 100%; }
-.teacher-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); }
-.teacher-photo { height: 180px; background-color: #e9ecef; }
-.teacher-info { padding: 20px; }
-.teacher-info .name { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-.teacher-info .tags { font-size: 14px; color: #868e96; }
-.teacher-card-link { text-decoration: none; color: inherit; }
-.sidebar-section { display: flex; flex-direction: column; gap: 30px; }
-.login-block, .ad-block { background-color: white; border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
-.login-block p { font-size: 16px; margin-bottom: 20px; line-height: 1.6; }
-.ad-block { display: flex; justify-content: center; align-items: center; min-height: 200px; color: #adb5bd; }
-
-
-.user-info-block {
-  background-color: white;
-  border-radius: 15px;
-  padding: 30px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-.welcome-msg {
-  font-size: 18px;
-  margin-bottom: 20px;
-  color: #333;
-}
-.user-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.logout-link {
-  background: none;
-  border: none;
-  color: #888;
-  text-decoration: underline;
-  cursor: pointer;
-  margin-top: 10px;
-  font-size: 13px;
-}
-.logout-link:hover { color: #333; }
-
-
-@media (max-width: 900px) {
-  
-  .content-grid {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 20px;
-  }
-
-  .sidebar-section {
-    display: block; 
-  }
-
-  .ad-block { display: none; } 
-  
-
-  .login-block, .user-info-block {
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
 </style>

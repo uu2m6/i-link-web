@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import { regionData } from '../data/regions.js'; // 회원가입과 동일한 지역 데이터 사용
+import { regionData } from '../data/regions.js'; 
 
 export default {
   data() {

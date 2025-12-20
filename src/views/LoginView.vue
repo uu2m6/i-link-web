@@ -78,13 +78,15 @@ export default {
           }
         });
 
+        // 백엔드가 수정되었다면 response.data 안에 name이 들어있습니다.
         const data = response.data;
         
-    
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('userRole', data.role);
-        localStorage.setItem('userName', data.name); 
+        
+        // [핵심] 서버에서 준 이름을 바로 저장합니다.
+        localStorage.setItem('userName', data.name);
         
         if (data.user_id) {
           localStorage.setItem('userId', data.user_id);

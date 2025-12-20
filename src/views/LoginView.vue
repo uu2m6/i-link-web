@@ -49,10 +49,7 @@ import BaseButton from '../components/BaseButton.vue';
 import TheHeader from '../components/TheHeader.vue';
 
 export default {
-  components: {
-    BaseButton,
-    TheHeader
-  },
+  components: { BaseButton, TheHeader },
   data() {
     return {
       identifier: '',
@@ -74,7 +71,6 @@ export default {
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-        // 1. 로그인 요청
         const response = await axios.post('/api/auth/token', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -82,44 +78,46 @@ export default {
           }
         });
 
-        console.log('로그인 응답:', response.data); // 데이터 확인용 로그
+        const { access_token } = response.data;
+        const token = access_token;
+        
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('token', token);
 
-        const { access_token, role, name, user_id } = response.data;
+        let userName = '회원';
+        let userRole = 'parent';
 
-        // 2. 중요: 이름 저장 로직 (여기가 핵심입니다!)
         try {
-          localStorage.setItem('isLoggedIn', 'true');
+          const meResponse = await axios.get('/api/users/me', {
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'ngrok-skip-browser-warning': 'true'
+            }
+          });
           
-          if (access_token) localStorage.setItem('token', access_token);
-          if (role) localStorage.setItem('userRole', role);
-          if (user_id) localStorage.setItem('userId', user_id);
-          
-          // [수정] 서버에서 이름(name)이 오면 저장하고, 없으면 이메일 앞부분(@ 앞)을 잘라서 이름으로 저장
-          let saveName = '회원';
-          if (name) {
-            saveName = name;
-          } else if (this.identifier.includes('@')) {
-            saveName = this.identifier.split('@')[0];
-          }
-          
-          localStorage.setItem('userName', saveName);
+          const userData = meResponse.data;
+          if (userData.name) userName = userData.name;
+          if (userData.role) userRole = userData.role;
+          if (userData.id) localStorage.setItem('userId', userData.id);
 
-        } catch (e) {
-          console.error('스토리지 저장 실패:', e);
+        } catch (infoError) {
+          if (response.data.name) userName = response.data.name;
+          if (response.data.role) userRole = response.data.role;
         }
 
-        // 3. 환영 메시지 및 이동
-        alert(`${localStorage.getItem('userName')}님 환영합니다!`);
+        localStorage.setItem('userName', userName);
+        localStorage.setItem('userRole', userRole);
 
-        if (role === 'sitter') {
+        alert(`${userName}님 환영합니다!`);
+
+        if (userRole === 'sitter') {
           this.$router.push('/teacher-home'); 
         } else {
           this.$router.push('/'); 
         }
 
       } catch (error) {
-        console.error('로그인 에러:', error);
-        alert('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
+        alert('아이디 또는 비밀번호를 확인해주세요.');
       } finally {
         this.isLoggingIn = false;
       }

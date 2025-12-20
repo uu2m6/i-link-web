@@ -71,7 +71,6 @@ export default {
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
-        // 1. 로그인 (토큰 발급)
         const response = await axios.post('/api/auth/token', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -80,45 +79,20 @@ export default {
         });
 
         const data = response.data;
-        const token = data.access_token || data.token;
         
+    
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('token', token);
-
-        let userName = '회원';
-        let userRole = 'parent';
-
-        // 서버 응답에 이미 이름이 있는지 확인
-        if (data.name) userName = data.name;
-        if (data.role) userRole = data.role;
-
-        // 2. 이름이 없다면 추가 요청 (주소 변경: users/me -> auth/me)
-        if (userName === '회원') {
-          try {
-            // [수정] 404 에러가 났던 /api/users/me 대신 /api/auth/me 로 시도
-            const meResponse = await axios.get('/api/auth/me', {
-              headers: { 
-                'Authorization': `Bearer ${token}`,
-                'ngrok-skip-browser-warning': 'true'
-              }
-            });
-            
-            if (meResponse.data.name) userName = meResponse.data.name;
-            if (meResponse.data.role) userRole = meResponse.data.role;
-            if (meResponse.data.id) localStorage.setItem('userId', meResponse.data.id);
-
-          } catch (e) {
-            // 여기서는 에러가 나도 무시하고 진행 (로그인은 시켜줘야 함)
-            console.log('추가 정보 조회 실패, 기본값 사용');
-          }
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('userRole', data.role);
+        localStorage.setItem('userName', data.name); 
+        
+        if (data.user_id) {
+          localStorage.setItem('userId', data.user_id);
         }
 
-        localStorage.setItem('userName', userName);
-        localStorage.setItem('userRole', userRole);
+        alert(`${data.name}님 환영합니다!`);
 
-        alert(`${userName}님 환영합니다!`);
-
-        if (userRole === 'sitter') {
+        if (data.role === 'sitter') {
           this.$router.push('/teacher-home'); 
         } else {
           this.$router.push('/'); 

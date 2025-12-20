@@ -38,8 +38,7 @@
         </form>
 
         <BaseButton @click="$router.push('/signup')" type="outline" style="margin-top: 10px;">회원가입</BaseButton>
-        
-        </div>
+      </div>
     </main>
   </div>
 </template>
@@ -75,6 +74,7 @@ export default {
         formData.append('username', this.identifier);
         formData.append('password', this.password);
 
+        // 1. 로그인 요청
         const response = await axios.post('/api/auth/token', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -82,23 +82,34 @@ export default {
           }
         });
 
+        console.log('로그인 응답:', response.data); // 데이터 확인용 로그
+
         const { access_token, role, name, user_id } = response.data;
 
+        // 2. 중요: 이름 저장 로직 (여기가 핵심입니다!)
         try {
           localStorage.setItem('isLoggedIn', 'true');
+          
           if (access_token) localStorage.setItem('token', access_token);
           if (role) localStorage.setItem('userRole', role);
           if (user_id) localStorage.setItem('userId', user_id);
           
-          // 아이디 대신 이름 저장
-          const userName = name || '회원'; 
-          localStorage.setItem('userName', userName);
+          // [수정] 서버에서 이름(name)이 오면 저장하고, 없으면 이메일 앞부분(@ 앞)을 잘라서 이름으로 저장
+          let saveName = '회원';
+          if (name) {
+            saveName = name;
+          } else if (this.identifier.includes('@')) {
+            saveName = this.identifier.split('@')[0];
+          }
+          
+          localStorage.setItem('userName', saveName);
 
         } catch (e) {
-          console.error('저장소 에러 무시함:', e);
+          console.error('스토리지 저장 실패:', e);
         }
 
-        alert(`${localStorage.getItem('userName')}님 환영합니다!`); 
+        // 3. 환영 메시지 및 이동
+        alert(`${localStorage.getItem('userName')}님 환영합니다!`);
 
         if (role === 'sitter') {
           this.$router.push('/teacher-home'); 
@@ -108,18 +119,7 @@ export default {
 
       } catch (error) {
         console.error('로그인 에러:', error);
-        
-        if (error.response) {
-          if (typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE html>')) {
-             console.log('ngrok 경고 페이지 (무시)');
-          } else if (error.response.status === 401 || error.response.status === 400) {
-            alert('아이디 또는 비밀번호가 일치하지 않습니다.');
-          } else {
-            alert('로그인 중 오류가 발생했습니다.');
-          }
-        } else {
-          alert('서버와 연결할 수 없습니다.');
-        }
+        alert('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
       } finally {
         this.isLoggingIn = false;
       }
@@ -139,7 +139,4 @@ export default {
 .input-group label { display: block; font-size: 14px; color: #555; margin-bottom: 8px; font-weight: 500; }
 .input-group input { width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; }
 .input-group input:focus { outline: none; border-color: #FFA726; box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.2); }
-/* .footer-text 스타일도 이제 사용하지 않으므로 삭제해도 되지만 남겨두어도 무방합니다. */
-.footer-text { font-size: 14px; color: #888; margin-top: 30px; cursor: pointer; text-decoration: none; display: inline-block; }
-.footer-text:hover { color: #FFA726; text-decoration: underline; }
 </style>

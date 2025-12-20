@@ -17,7 +17,7 @@
       <section class="request-section">
         <div class="section-header">
           <h3>📨 최근 들어온 돌봄 신청</h3>
-          <router-link to="/history" class="link-more">전체보기 ></router-link>
+          <router-link to="/teacher/history" class="link-more">전체보기 ></router-link>
         </div>
 
         <div v-if="recentRequests.length === 0" class="empty-state">
@@ -60,7 +60,6 @@ export default {
   data() {
     return {
       teacherName: '',
-      // 더미 데이터 (실제로는 API 연동)
       recentRequests: [
         {
           id: 1,
@@ -79,12 +78,30 @@ export default {
           location: '서울 서초구 반포동',
           time: '10:00 (4시간)',
           pay: 60000
+        },
+        // [테스트용] 카드가 가로로 잘 뜨는지 확인하기 위해 더미 데이터 추가
+        {
+          id: 3,
+          isNew: false,
+          date: '2025-10-23',
+          parentName: '박민수',
+          location: '서울 송파구 잠실동',
+          time: '13:00 (2시간)',
+          pay: 30000
+        },
+        {
+          id: 4,
+          isNew: true,
+          date: '2025-10-25',
+          parentName: '최유리',
+          location: '서울 강동구 천호동',
+          time: '09:00 (5시간)',
+          pay: 75000
         }
       ]
     };
   },
   mounted() {
-    // 로그인한 선생님 이름 가져오기
     this.teacherName = localStorage.getItem('userName') || '선생님';
   },
   methods: {
@@ -93,7 +110,6 @@ export default {
       return `${date.getMonth() + 1}월 ${date.getDate()}일`;
     },
     goToDetail(id) {
-      // 아까 만든 선생님 상세 페이지 경로로 이동
       this.$router.push(`/teacher/request/${id}`);
     }
   }
@@ -102,25 +118,29 @@ export default {
 
 <style scoped>
 .home-container { background-color: #f8f9fa; min-height: 100vh; }
-.main-content { max-width: 600px; margin: 0 auto; padding: 20px; }
 
-/* 웰컴 배너 스타일 수정 */
+/* [수정 1] 컨테이너 너비를 600px -> 1200px로 넓힘 */
+.main-content { 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: 20px; 
+}
+
 .welcome-banner {
-  background-color: #4CAF50; /* 선생님 테마색 (초록) */
+  background-color: #4CAF50;
   color: white;
   padding: 30px 25px;
   border-radius: 20px;
   margin-bottom: 30px;
   box-shadow: 0 10px 20px rgba(76, 175, 80, 0.2);
   display: flex;
-  justify-content: space-between; /* 텍스트와 버튼 양옆 배치 */
+  justify-content: space-between;
   align-items: center;
 }
 
 .welcome-banner h2 { font-size: 1.5rem; margin-bottom: 10px; font-weight: 800; }
 .welcome-banner p { font-size: 1rem; opacity: 0.9; }
 
-/* [추가] 내 정보 수정 버튼 스타일 */
 .btn-edit-profile {
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
@@ -130,12 +150,10 @@ export default {
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;
-  white-space: nowrap; /* 줄바꿈 방지 */
+  white-space: nowrap;
   transition: background 0.2s;
 }
-.btn-edit-profile:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
+.btn-edit-profile:hover { background-color: rgba(255, 255, 255, 0.3); }
 
 .request-section { margin-top: 20px; }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -144,14 +162,19 @@ export default {
 
 .empty-state { text-align: center; color: #aaa; padding: 40px; background: white; border-radius: 15px; }
 
-.request-grid { display: grid; gap: 15px; }
+/* [수정 2] 그리드 설정: 한 줄에 3개씩 배치 (반응형) */
+.request-grid { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); /* PC에서는 3개씩 */
+  gap: 20px; 
+}
 
 .request-card {
   background: white; padding: 20px; border-radius: 15px;
   border: 1px solid #eee; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
   display: flex; flex-direction: column; justify-content: space-between;
 }
-.request-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+.request-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
 
 .card-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
 .tag-new { background: #ff4d4f; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
@@ -167,4 +190,11 @@ export default {
   color: #555; font-weight: bold; cursor: pointer;
 }
 .btn-check:hover { background-color: #e9ecef; }
+
+/* [수정 3] 모바일 화면(폭 900px 이하)에서는 다시 세로로 1개씩 보이게 설정 */
+@media (max-width: 900px) {
+  .request-grid {
+    grid-template-columns: 1fr; /* 모바일: 1열 */
+  }
+}
 </style>

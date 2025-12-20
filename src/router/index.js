@@ -20,21 +20,34 @@ import TeacherRequestDetailView from '../views/TeacherRequestDetailView.vue';
 import TeacherHistoryView from '../views/TeacherHistoryView.vue';
 
 const routes = [
-  { path: '/', redirect: '/home' }, 
-  
+  /**
+   * ✅ 기본 진입(/) 시 역할에 따라 홈 분기
+   */
+  {
+    path: '/',
+    redirect: () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const role = localStorage.getItem('userRole'); // 'parent' | 'sitter'
+
+      if (!isLoggedIn) return '/login';
+      if (role === 'sitter') return '/teacher-home';
+      return '/home'; // 학부모
+    }
+  },
+
   { path: '/login', name: 'Login', component: LoginView },
   { path: '/signup', name: 'SignUp', component: SignUpView },
   { path: '/onboarding', name: 'Onboarding', component: OnboardingView },
   { path: '/home', name: 'Home', component: HomeView },
-  
+
   // 선생님 프로필 상세 (학부모가 보는 화면)
   { path: '/teacher/:id', name: 'TeacherProfile', component: TeacherProfileView },
-  
+
   { path: '/search', name: 'Search', component: SearchView },
-  
+
   // 학부모용 내역
   { path: '/history', name: 'MyCareHistory', component: MyCareHistoryView },
-  
+
   { path: '/procareapply', name: 'ProCareApplyView', component: ProCareApplyView },
   { path: '/recareapply', name: 'ReCareApplyView', component: ReCareApplyView },
   { path: '/forgot-password', name: 'ForgetPassView', component: ForgetPassView },
@@ -45,15 +58,15 @@ const routes = [
   // 프로필 수정
   { path: '/profile/edit/parent', name: 'ParentProfileEdit', component: ParentProfileEdit },
   { path: '/profile/edit/teacher', name: 'TeacherProfileEdit', component: TeacherProfileEdit },
-  
+
   // 선생님 전용 페이지들
   { path: '/teacher-home', name: 'TeacherHome', component: TeacherHomeView },
   { path: '/teacher/request/:id', name: 'TeacherRequestDetail', component: TeacherRequestDetailView },
-  
-  // [중요] 선생님용 내역 페이지
+
+  // 선생님용 내역 페이지
   { path: '/teacher/history', name: 'TeacherHistory', component: TeacherHistoryView },
 
-  // [필수 수정] 404 에러 페이지는 반드시 '가장 마지막'에 있어야 합니다.
+  // 404 (항상 마지막)
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
 ];
 
@@ -62,21 +75,40 @@ const router = createRouter({
   routes,
 });
 
+/**
+ * ✅ 전역 네비게이션 가드
+ */
 router.beforeEach((to, from, next) => {
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const role = localStorage.getItem('userRole'); // 'parent' | 'sitter'
 
-  const publicPages = ['/login', '/signup', '/forgot-password', '/reset-password', '/terms', '/customer-service'];
+  const publicPages = [
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset-password',
+    '/terms',
+    '/customer-service'
+  ];
   const authRequired = !publicPages.includes(to.path);
 
+  // 로그인 안 했는데 보호 페이지 접근
   if (authRequired && !isLoggedIn) {
     next('/login');
-  } 
-  else if (isLoggedIn && (to.path === '/login' || to.path === '/signup')) {
-    next('/home');
-  } 
-  else {
-    next();
+    return;
   }
+
+  // 로그인 상태에서 로그인/회원가입 접근 시 → 역할별 홈
+  if (isLoggedIn && (to.path === '/login' || to.path === '/signup')) {
+    if (role === 'sitter') {
+      next('/teacher-home');
+    } else {
+      next('/home');
+    }
+    return;
+  }
+
+  next();
 });
 
 export default router;

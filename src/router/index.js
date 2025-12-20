@@ -17,6 +17,8 @@ import ParentProfileEdit from '../views/ParentProfileEdit.vue';
 import TeacherProfileEdit from '../views/TeacherProfileEdit.vue';
 import TeacherHomeView from '@/views/TeacherHomeView.vue';
 import TeacherRequestDetailView from '../views/TeacherRequestDetailView.vue';
+import TeacherHistoryView from '../views/TeacherHistoryView.vue';
+
 
 const routes = [
   
@@ -40,7 +42,7 @@ const routes = [
   { path: '/profile/edit/teacher', name: 'TeacherProfileEdit', component: TeacherProfileEdit },
    { path: '/teacher-home', name: 'TeacherHome', component: TeacherHomeView },
    { path: '/teacher/request/:id', name: 'TeacherRequestDetail', component: TeacherRequestDetailView },
-
+{ path: '/teacher/history', name: 'TeacherHistory', component: TeacherHistoryView },
   ];
 
 const router = createRouter({

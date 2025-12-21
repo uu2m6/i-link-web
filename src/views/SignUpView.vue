@@ -549,33 +549,57 @@ export default {
           : Number(String(this.teacherInfo.wage).replace(/,/g, ''));
 
         let fullAddress = '';
+        let regionValue = ''; // hope_regions에 들어갈 값
+
         if (this.userType === 'parent') {
+          // 학부모: address에는 전체 주소, hope_regions에는 "시/도 구/군"만
           fullAddress = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict} ${this.parentInfo.detailAddress}`.trim();
+          regionValue = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict}`;
         } else {
+          // 선생님: address는 첫번째 활동 지역으로 대체
           fullAddress = this.teacherInfo.selectedRegions[0] || '주소 미입력';
+          regionValue = this.teacherInfo.selectedRegions; // 배열
         }
 
-        const firstChild = this.parentInfo.children[0] || {};
+        // 아이 정보 프로필 구성 (학부모용)
+        let childrenProfiles = null;
+        if (this.userType === 'parent') {
+          childrenProfiles = this.parentInfo.children.map(child => ({
+            child_year: String(child.birthYear),
+            child_age: Number(child.age),
+            child_gender: child.gender
+          }));
+        }
 
+        // 백엔드 스키마(Snake Case)에 맞춰 데이터 구성
         const formData = {
           name: this.name,
           email: this.identifier,
           password1: this.password,
           password2: this.confirmPassword,
           role: this.userType,
-          address: fullAddress,
+          address: fullAddress, // User 테이블용 주소
 
-          children: this.userType === 'parent' ? this.parentInfo.numChildren : null,
-          child_year: this.userType === 'parent' ? String(firstChild.birthYear) : null,
-          child_age: this.userType === 'parent' ? Number(firstChild.age) : null,
-          child_gender: this.userType === 'parent' ? firstChild.gender : null,
-          warning: this.userType === 'parent' ? this.parentInfo.notes : null,
-          
+          // --- 학부모/선생님 공통 필드 매핑 ---
+          // 희망 시급: hope_pay (integer)
           hope_pay: numericWage,
           
-          activities: this.userType === 'sitter' ? this.teacherInfo.activities : null,
-          hope_regions: this.userType === 'sitter' ? this.teacherInfo.selectedRegions : null,
+          // 희망 지역: hope_regions
+          hope_regions: regionValue,
+
+          // 활동/돌봄 유형: activities (학부모의 careTypes도 activities로 매핑)
+          activities: this.userType === 'parent' ? this.parentInfo.careTypes : this.teacherInfo.activities,
+
+          // --- 학부모 전용 ---
+          // 아이들 정보: 리스트 형태로 전송
+          children_profiles: childrenProfiles,
+          
+          warning: this.userType === 'parent' ? this.parentInfo.notes : null,
+          
+          // --- 선생님 전용 ---
+          // 급여 주기: pay_period
           pay_period: this.userType === 'sitter' ? this.teacherInfo.paymentCycles : null,
+          
           cctv_agree: this.userType === 'sitter' ? (this.teacherInfo.cctvAgree === 'agree') : null,
           info_agree: this.agreed,
           
@@ -606,7 +630,11 @@ export default {
             const errorDetail = error.response.data.detail;
             let alertMsg = '';
             if (Array.isArray(errorDetail)) {
-              alertMsg = errorDetail.map(e => `${e.loc[1]}: ${e.msg}`).join('\n');
+              // Pydantic 유효성 검사 에러 처리
+              alertMsg = errorDetail.map(e => {
+                const field = e.loc[e.loc.length - 1]; // 에러 필드명
+                return `${field}: ${e.msg}`;
+              }).join('\n');
             } else {
               alertMsg = errorDetail || '회원가입 중 오류가 발생했습니다.';
             }
@@ -699,7 +727,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 30px 0; }
   justify-content: space-between;
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  width: 160px;
+  width: 160px; /* 너비 */
   overflow: hidden;
   background-color: white;
 }

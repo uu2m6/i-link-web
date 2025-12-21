@@ -32,7 +32,6 @@
 
         <aside class="sidebar-section">
           
-          <!-- 로그인 전 -->
           <div class="login-block" v-if="!isLoggedIn">
             <p>로그인하고<br>맞춤 정보를 확인하세요!</p>
             <BaseButton
@@ -43,7 +42,6 @@
             </BaseButton>
           </div>
 
-          <!-- 로그인 후 (학부모) -->
           <div class="user-info-block" v-else>
             <p class="welcome-msg">
               반가워요, <strong>{{ userName }}</strong>님! 👋
@@ -80,6 +78,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import BaseButton from '../components/BaseButton.vue'
 import TheHeader from '../components/TheHeader.vue'
 
@@ -102,26 +101,48 @@ export default {
       ]
     }
   },
-  mounted() {
-    if (sessionStorage.getItem('isLoggedIn') === 'true') {
-      this.isLoggedIn = true
-      this.userName = sessionStorage.getItem('userName') || '회원'
+  async mounted() {
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    
+    if (token) {
+      this.isLoggedIn = true;
+      
+
+      try {
+        const response = await axios.get('/api/user/me', {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+        this.userName = response.data.name;
+      } catch (error) {
+        console.error('사용자 정보 로드 실패:', error);
+
+        this.isLoggedIn = false;
+        localStorage.removeItem('token');
+        sessionStorage.clear();
+      }
+    } else {
+      this.isLoggedIn = false;
     }
   },
   methods: {
     logout() {
-      sessionStorage.removeItem('isLoggedIn')
-      sessionStorage.removeItem('userName')
-      sessionStorage.removeItem('user')
-      alert('로그아웃 되었습니다.')
-      this.$router.go()
+      if(confirm('로그아웃 하시겠습니까?')) {
+        localStorage.removeItem('token');
+        sessionStorage.clear();
+        this.isLoggedIn = false;
+        this.$router.push('/login');
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-/* 전체 페이지 배경 및 레이아웃 */
+
 .home-page {
   background-color: #f8f9fa;
   min-height: 100vh;
@@ -133,7 +154,6 @@ export default {
   padding: 0 20px 60px 20px;
 }
 
-/* 검색 섹션 */
 .search-section {
   padding: 40px 0;
   text-align: center;
@@ -169,16 +189,14 @@ export default {
   color: #333;
 }
 
-/* 메인 그리드 (좌측 콘텐츠 + 우측 사이드바) */
 .content-grid {
   display: flex;
   gap: 30px;
   align-items: flex-start;
 }
 
-/* 추천 선생님 섹션 (좌측) */
 .recommendation-section {
-  flex: 3; /* 공간을 더 많이 차지 */
+  flex: 3;
 }
 
 .recommendation-section h2 {
@@ -219,7 +237,7 @@ export default {
 .teacher-photo {
   height: 160px;
   background-color: #f1f3f5; 
-  background-image: url('https://via.placeholder.com/300x200?text=Teacher'); /* 임시 이미지 */
+  background-image: url('https://via.placeholder.com/300x200?text=Teacher'); 
   background-size: cover;
   background-position: center;
 }
@@ -246,7 +264,7 @@ export default {
   margin: 0;
 }
 
-/* 사이드바 (우측) */
+
 .sidebar-section {
   flex: 1; /* 좁은 공간 */
   min-width: 300px;
@@ -254,7 +272,7 @@ export default {
   top: 20px;
 }
 
-/* 사이드바 내 박스 공통 스타일 */
+
 .login-block,
 .user-info-block,
 .ad-block {
@@ -267,7 +285,6 @@ export default {
   border: 1px solid #f1f3f5;
 }
 
-/* 로그인 블록 */
 .login-block p {
   font-size: 16px;
   color: #555;
@@ -276,7 +293,6 @@ export default {
   font-weight: 500;
 }
 
-/* 유저 정보 블록 */
 .welcome-msg {
   font-size: 18px;
   margin-bottom: 25px;
@@ -306,7 +322,6 @@ export default {
   color: #868e96;
 }
 
-/* 광고 블록 */
 .ad-block {
   height: 200px;
   background-color: #e9ecef;
@@ -317,7 +332,6 @@ export default {
   font-weight: bold;
 }
 
-/* 반응형 (태블릿/모바일) */
 @media (max-width: 900px) {
   .content-grid {
     flex-direction: column;
@@ -329,11 +343,10 @@ export default {
     flex: none;
   }
 
-  /* 모바일에서는 사이드바가 내용 아래로 내려가거나 위로 올라갈 수 있음 */
   .sidebar-section {
     min-width: auto;
     position: static;
-    order: -1; /* 사이드바(로그인창)를 위로 올리고 싶으면 주석 해제 */
+    order: -1; 
   }
 
   .recommendation-grid {

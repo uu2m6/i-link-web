@@ -18,21 +18,13 @@ import TeacherProfileEdit from '../views/TeacherProfileEdit.vue';
 import TeacherHomeView from '@/views/TeacherHomeView.vue';
 import TeacherRequestDetailView from '../views/TeacherRequestDetailView.vue';
 import TeacherHistoryView from '../views/TeacherHistoryView.vue';
+import axios from 'axios';
 
 const routes = [
-
   {
     path: '/',
-    redirect: () => {
-      const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-      const role = sessionStorage.getItem('userRole'); // 'parent' | 'sitter'
-
-      if (!isLoggedIn) return '/login';
-      if (role === 'sitter') return '/teacher-home';
-      return '/home'; 
-    }
+    redirect: '/login'
   },
-
   { path: '/login', name: 'Login', component: LoginView },
   { path: '/signup', name: 'SignUp', component: SignUpView },
   { path: '/onboarding', name: 'Onboarding', component: OnboardingView },
@@ -52,7 +44,6 @@ const routes = [
   { path: '/teacher/request/:id', name: 'TeacherRequestDetail', component: TeacherRequestDetailView },
   { path: '/teacher/history', name: 'TeacherHistory', component: TeacherHistoryView },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
-
 ];
 
 const router = createRouter({
@@ -60,10 +51,10 @@ const router = createRouter({
   routes,
 });
 
-
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-  const role = sessionStorage.getItem('userRole'); // 'parent' | 'sitter'
+  const role = sessionStorage.getItem('userRole'); 
+  const token = localStorage.getItem('token');
 
   const publicPages = [
     '/login',
@@ -79,8 +70,25 @@ router.beforeEach((to, from, next) => {
     next('/login');
     return;
   }
+
   if (isLoggedIn && (to.path === '/login' || to.path === '/signup')) {
     if (role === 'sitter') {
+      try {
+        const res = await axios.get('/api/user/me', {
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'ngrok-skip-browser-warning': 'true'
+            }
+        });
+        
+        const userData = res.data;
+        if ((!userData.certifications || userData.certifications.length === 0) && to.path !== '/onboarding') {
+             next('/onboarding');
+             return;
+        }
+      } catch (e) {
+        console.error(e);
+      }
       next('/teacher-home');
     } else {
       next('/home');

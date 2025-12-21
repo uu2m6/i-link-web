@@ -70,13 +70,13 @@ export default {
       }
       console.log('서버로 제출할 파일:', this.selectedFile);
       alert('증명서가 성공적으로 제출되었습니다. 관리자 확인 후 활동이 가능합니다.');
-      this.$router.push('/home');
+      this.$router.push('/teacher-home');
     },
     
 
     skipOnboarding() {
       if (confirm('자격 증명을 나중에 하시겠습니까?\n인증되지 않은 상태에서는 일부 활동이 제한될 수 있습니다.')) {
-        this.$router.push('/home');
+        this.$router.push('/teacher-home');
       }
     }
   }

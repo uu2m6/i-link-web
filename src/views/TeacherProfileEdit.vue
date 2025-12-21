@@ -114,6 +114,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import { regionData } from '../data/regions.js'; 
 
 export default {
@@ -130,7 +131,6 @@ export default {
         introduction: '',
         cctvAgree: 'agree'
       },
-      // 선택용 데이터
       regionData: regionData,
       regionSelect: { province: '', district: '' },
       activityOptions: ['실내놀이', '등하원 동행', '영어 놀이', '한글놀이', '학습지도', '야외활동', '책읽기']
@@ -151,7 +151,6 @@ export default {
     }
   },
   async mounted() {
-    // 1. 로그인 체크
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     if (!isLoggedIn) {
       alert('로그인이 필요합니다.');
@@ -159,34 +158,42 @@ export default {
       return;
     }
 
-    // 2. 기존 정보 불러오기
+
     await this.fetchTeacherData();
   },
   methods: {
-    async fetchTeacherData() {
-      try {
-        // ★ 실제 백엔드 API가 있다면 여기서 GET 요청을 합니다.
-        // const response = await axios.get('/api/auth/me'); 
-        // const data = response.data;
-        // this.teacherInfo = { ...data };
+  async fetchTeacherData() {
+  try {
 
-        // [임시] 로컬 스토리지 또는 기본값 사용 (백엔드 연동 전 테스트용)
-        this.teacherInfo.name = localStorage.getItem('userName') || '선생님';
-        this.teacherInfo.experienceYear = '3-5';
-        this.teacherInfo.experienceDesc = '유치원 교사 경력 3년 있습니다.';
-        this.teacherInfo.certifications = ['보육교사 2급'];
-        this.teacherInfo.activities = ['실내놀이', '등하원 동행'];
-        this.teacherInfo.selectedRegions = ['서울 - 강남구'];
-        this.teacherInfo.wage = 15000;
-        this.teacherInfo.introduction = '아이들을 사랑으로 돌봅니다.';
-        this.teacherInfo.cctvAgree = 'agree';
-        
-      } catch (error) {
-        console.error('정보 로드 실패:', error);
-      }
-    },
+    const response = await axios.get('/api/user/me', {
+       headers: { 
+         'Authorization': `Bearer ${localStorage.getItem('token')}`,
+         'ngrok-skip-browser-warning': 'true' 
+       }
+    });
+    
+    const data = response.data;
 
-    // 자격증 추가/삭제
+
+    this.teacherInfo = {
+        name: data.name,
+        experienceYear: data.career,
+        experienceDesc: data.career_detail,
+        certifications: data.certifications ? data.certifications.split(', ') : [],
+        activities: data.activities ? data.activities.split(', ') : [],
+        selectedRegions: data.hope_regions ? data.hope_regions.split(', ') : [],
+        wage: data.hope_pay,
+        introduction: data.introduction,
+        cctvAgree: data.cctv_agree ? 'agree' : 'disagree'
+    };
+
+  } catch (error) {
+    console.error('정보 로드 실패:', error);
+    alert('회원 정보를 불러오지 못했습니다.');
+  }
+},
+
+
     addCertification() {
       this.teacherInfo.certifications.push('');
     },
@@ -194,7 +201,7 @@ export default {
       this.teacherInfo.certifications.splice(index, 1);
     },
 
-    // 지역 추가/삭제
+
     addRegion() {
       const newRegion = `${this.regionSelect.province} - ${this.regionSelect.district}`;
       if (this.regionSelect.district && !this.teacherInfo.selectedRegions.includes(newRegion)) {
@@ -206,7 +213,6 @@ export default {
       this.teacherInfo.selectedRegions = this.teacherInfo.selectedRegions.filter(r => r !== region);
     },
 
-    // 시급 포맷팅
     formatWage(value) {
       if (!value) return '';
       return Number(value).toLocaleString();
@@ -217,12 +223,12 @@ export default {
       event.target.value = this.formatWage(this.teacherInfo.wage);
     },
 
-    // 수정 요청 전송
+   
     async updateProfile() {
       if (!confirm('프로필을 수정하시겠습니까?')) return;
 
       try {
-        // 백엔드 데이터 구조에 맞춰 페이로드 생성
+       
         const payload = {
             career: this.teacherInfo.experienceYear,
             career_detail: this.teacherInfo.experienceDesc,
@@ -234,13 +240,6 @@ export default {
             cctv_agree: this.teacherInfo.cctvAgree === 'agree'
         };
 
-        // ★ 백엔드 API 호출 (주석 해제 후 사용)
-        // await axios.put('/api/auth/me', payload, {
-        //   headers: { 
-        //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        //     'ngrok-skip-browser-warning': 'true' 
-        //   }
-        // });
 
         console.log('수정 요청 데이터:', payload);
         alert('성공적으로 수정되었습니다!');

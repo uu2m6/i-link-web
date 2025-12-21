@@ -1,23 +1,23 @@
 <template>
-  <div>
+  <div class="page-container">
     <TheHeader />
     <main class="auth-layout">
       <div class="login-card">
-        <div class="logo">
+        <div class="logo-area">
           <span class="logo-icon">🔗</span>
           <span class="logo-text">아이Link</span>
         </div>
         <p class="tagline">아이와 세상을 연결하는 다리</p>
 
-        <form @submit.prevent="login">
+        <form @submit.prevent="handleLogin">
           <div class="input-group">
-            <label for="identifier">이메일 (아이디)</label>
+            <label for="email">이메일 (아이디)</label>
             <input 
-              type="text" 
-              id="identifier" 
-              v-model="identifier" 
-              placeholder="이메일 또는 휴대폰 번호 입력" 
-              autocomplete="username"
+              type="email" 
+              id="email" 
+              v-model="email" 
+              placeholder="example@email.com" 
+              required 
             />
           </div>
 
@@ -28,147 +28,131 @@
               id="password" 
               v-model="password" 
               placeholder="비밀번호를 입력하세요" 
-              autocomplete="current-password"
+              required 
             />
           </div>
 
-          <BaseButton type="primary" :disabled="isLoggingIn">
-            {{ isLoggingIn ? '로그인 중...' : '로그인' }}
-          </BaseButton>
+          <button type="submit" class="login-btn">
+            로그인
+          </button>
         </form>
 
-        <BaseButton
-          @click="$router.push('/signup')"
-          type="outline"
-          style="margin-top: 10px;"
-        >
-          회원가입
-        </BaseButton>
+        <div class="link-actions">
+          <span class="link-item" @click="$router.push('/signup')">회원가입</span>
+          <span class="divider">|</span>
+          <span class="link-item" @click="$router.push('/forgot-password')">비밀번호 찾기</span>
+        </div>
       </div>
     </main>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
-import BaseButton from '../components/BaseButton.vue'
-import TheHeader from '../components/TheHeader.vue'
+import axios from 'axios';
+import TheHeader from '../components/TheHeader.vue';
 
 export default {
-  components: { BaseButton, TheHeader },
+  components: { TheHeader },
   data() {
     return {
-      identifier: '',
-      password: '',
-      isLoggingIn: false
-    }
+      email: '',
+      password: ''
+    };
   },
   methods: {
-    async login() {
-      if (!this.identifier || !this.password) {
-        alert('아이디와 비밀번호를 모두 입력해주세요.')
-        return
+    async handleLogin() {
+      if (!this.email || !this.password) {
+        alert('이메일과 비밀번호를 입력해주세요.');
+        return;
       }
 
-      this.isLoggingIn = true
-
       try {
-        const formData = new URLSearchParams()
-        formData.append('username', this.identifier)
-        formData.append('password', this.password)
+        const formData = new FormData();
+        formData.append('username', this.email);
+        formData.append('password', this.password);
 
         const response = await axios.post('/api/auth/token', formData, {
-          headers: {
+          headers: { 
             'Content-Type': 'application/x-www-form-urlencoded',
             'ngrok-skip-browser-warning': 'true'
           }
-        })
+        });
 
-        const data = response.data
-   
-        sessionStorage.setItem('isLoggedIn', 'true')
-        sessionStorage.setItem('token', data.access_token)
-        sessionStorage.setItem('userRole', data.role) // parent | sitter
-        
 
-        if (data.name) {
-             sessionStorage.setItem('userName', data.name)
+        const { access_token, role, name } = response.data;
+
+
+        localStorage.setItem('token', access_token);
+        sessionStorage.setItem('token', access_token);
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('userRole', role);
+        sessionStorage.setItem('userName', name || (role === 'sitter' ? '선생님' : '학부모'));
+
+        console.log("로그인 성공! 역할:", role);
+
+        if (role === 'sitter') {
+          this.$router.push('/teacher-home');
         } else {
-
-             console.warn('백엔드에서 이름을 안 보내줌. 기본값 사용')
-             sessionStorage.setItem('userName', '회원')
-        }
-
-        if (data.user_id) {
-          sessionStorage.setItem('userId', data.user_id)
-        }
-
-        const displayName = data.name || '회원'
-        alert(`${displayName}님 환영합니다!`)
-
-
-        if (data.role === 'sitter') {
-          this.$router.push('/teacher-home')
-        } else {
-         
-          this.$router.push('/')
+          this.$router.push('/home'); // 학부모는 home으로
         }
 
       } catch (error) {
-        console.error(error)
-        alert('아이디 또는 비밀번호를 확인해주세요.')
-      } finally {
-        this.isLoggingIn = false
+        console.error('로그인 에러:', error);
+        alert('로그인 실패: 아이디 또는 비밀번호를 확인해주세요.');
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>
+.page-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
 .auth-layout {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px 20px;
-  min-height: calc(100vh - 75px);
-  background-color: #f8f9fa;
+  padding: 20px;
 }
 
 .login-card {
   width: 100%;
-  max-width: 420px;
-  padding: 40px;
+  max-width: 400px;
   background-color: white;
+  padding: 40px;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   text-align: center;
 }
 
-.logo {
+.logo-area {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 }
 
 .logo-icon {
-  font-size: 38px;
-  margin-right: 10px;
-  color: #FFA726;
+  font-size: 32px;
+  margin-right: 8px;
 }
 
 .logo-text {
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 800;
   color: #333;
 }
 
 .tagline {
-  font-size: 18px;
   color: #666;
-  margin-bottom: 40px;
-  line-height: 1.5;
+  margin-bottom: 30px;
+  font-size: 15px;
 }
 
 .input-group {
@@ -179,24 +163,62 @@ export default {
 .input-group label {
   display: block;
   font-size: 14px;
-  color: #555;
+  font-weight: 600;
+  color: #444;
   margin-bottom: 8px;
-  font-weight: 500;
 }
 
 .input-group input {
   width: 100%;
-  padding: 14px;
-  border: 1px solid #e0e0e0;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 15px;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s;
 }
 
 .input-group input:focus {
   outline: none;
-  border-color: #FFA726;
-  box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.2);
+  border-color: #FBBF24;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #FBBF24;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+  background-color: #F59E0B;
+}
+
+.link-actions {
+  margin-top: 25px;
+  font-size: 14px;
+  color: #888;
+}
+
+.link-item {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.link-item:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
 }
 </style>

@@ -160,7 +160,6 @@ export default {
 .page-container { background-color: #f8f9fa; min-height: 100vh; }
 .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
 
-
 .content-grid {
   display: flex;
   gap: 30px;
@@ -201,7 +200,6 @@ export default {
 
 .detail-btn { margin-top: auto; padding: 12px; background-color: #f1f8e9; border: none; border-radius: 10px; color: #2E7D32; font-weight: bold; cursor: pointer; margin-top: 20px; }
 .detail-btn:hover { background-color: #dcedc8; }
-
 
 .sidebar-section {
   flex: 1;
@@ -259,11 +257,9 @@ export default {
 }
 .logout-link:hover { color: #868e96; }
 
-
 @media (max-width: 900px) {
-  .content-grid { flex-direction: column-reverse; } 
+  .content-grid { flex-direction: column-reverse; } /* 모바일에서는 사이드바가 위로 */
   .request-section, .sidebar-section { width: 100%; flex: none; }
   .sidebar-section { position: static; margin-bottom: 30px; }
-  .content-grid { flex-direction: column; } 
 }
 </style>

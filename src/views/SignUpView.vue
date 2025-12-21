@@ -478,13 +478,34 @@ export default {
     },
 
     async mockReverseGeocoding(lat, lon) {
-      return new Promise((resolve) => {
-        console.log(`좌표 변환 요청: 위도 ${lat}, 경도 ${lon}`);
-        setTimeout(() => {
-          const mockAddress = this.teacherInfo.selectedRegions[0] || "서울 강남구"; 
-          resolve(mockAddress);
-        }, 1000);
-      });
+      try {
+        const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+          params: {
+            format: 'json',
+            lat: lat,
+            lon: lon,
+            zoom: 18,
+            addressdetails: 1,
+            'accept-language': 'ko'
+          }
+        });
+
+        if (response.data && response.data.address) {
+          const addr = response.data.address;
+          let city = addr.city || addr.province || addr.state || '';
+          const district = addr.borough || addr.district || addr.suburb || '';
+
+          const shortCity = city.replace(/(특별시|광역시|특별자치시|도|특별자치도)$/g, '');
+
+          return `${shortCity} ${district}`.trim();
+        }
+        
+        return "주소 확인 불가";
+
+      } catch (error) {
+        console.error(error);
+        return '위치 확인 에러';
+      }
     },
 
     validateInputs() {
@@ -549,19 +570,16 @@ export default {
           : Number(String(this.teacherInfo.wage).replace(/,/g, ''));
 
         let fullAddress = '';
-        let regionValue = ''; // hope_regions에 들어갈 값
+        let regionValue = '';
 
         if (this.userType === 'parent') {
-          // 학부모: address에는 전체 주소, hope_regions에는 "시/도 구/군"만
           fullAddress = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict} ${this.parentInfo.detailAddress}`.trim();
           regionValue = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict}`;
         } else {
-          // 선생님: address는 첫번째 활동 지역으로 대체
           fullAddress = this.teacherInfo.selectedRegions[0] || '주소 미입력';
-          regionValue = this.teacherInfo.selectedRegions; // 배열
+          regionValue = this.teacherInfo.selectedRegions;
         }
 
-        // 아이 정보 프로필 구성 (학부모용)
         let childrenProfiles = null;
         if (this.userType === 'parent') {
           childrenProfiles = this.parentInfo.children.map(child => ({
@@ -571,33 +589,24 @@ export default {
           }));
         }
 
-        // 백엔드 스키마(Snake Case)에 맞춰 데이터 구성
         const formData = {
           name: this.name,
           email: this.identifier,
           password1: this.password,
           password2: this.confirmPassword,
           role: this.userType,
-          address: fullAddress, // User 테이블용 주소
+          address: fullAddress,
 
-          // --- 학부모/선생님 공통 필드 매핑 ---
-          // 희망 시급: hope_pay (integer)
           hope_pay: numericWage,
           
-          // 희망 지역: hope_regions
           hope_regions: regionValue,
 
-          // 활동/돌봄 유형: activities (학부모의 careTypes도 activities로 매핑)
           activities: this.userType === 'parent' ? this.parentInfo.careTypes : this.teacherInfo.activities,
 
-          // --- 학부모 전용 ---
-          // 아이들 정보: 리스트 형태로 전송
           children_profiles: childrenProfiles,
           
           warning: this.userType === 'parent' ? this.parentInfo.notes : null,
           
-          // --- 선생님 전용 ---
-          // 급여 주기: pay_period
           pay_period: this.userType === 'sitter' ? this.teacherInfo.paymentCycles : null,
           
           cctv_agree: this.userType === 'sitter' ? (this.teacherInfo.cctvAgree === 'agree') : null,
@@ -630,9 +639,8 @@ export default {
             const errorDetail = error.response.data.detail;
             let alertMsg = '';
             if (Array.isArray(errorDetail)) {
-              // Pydantic 유효성 검사 에러 처리
               alertMsg = errorDetail.map(e => {
-                const field = e.loc[e.loc.length - 1]; // 에러 필드명
+                const field = e.loc[e.loc.length - 1];
                 return `${field}: ${e.msg}`;
               }).join('\n');
             } else {
@@ -727,7 +735,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 30px 0; }
   justify-content: space-between;
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  width: 160px; /* 너비 */
+  width: 160px;
   overflow: hidden;
   background-color: white;
 }

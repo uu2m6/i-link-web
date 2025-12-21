@@ -18,7 +18,6 @@ import TeacherProfileEdit from '../views/TeacherProfileEdit.vue';
 import TeacherHomeView from '@/views/TeacherHomeView.vue';
 import TeacherRequestDetailView from '../views/TeacherRequestDetailView.vue';
 import TeacherHistoryView from '../views/TeacherHistoryView.vue';
-import axios from 'axios';
 
 const routes = [
   {
@@ -51,10 +50,9 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
   const role = sessionStorage.getItem('userRole'); 
-  const token = localStorage.getItem('token');
 
   const publicPages = [
     '/login',
@@ -73,22 +71,6 @@ router.beforeEach(async (to, from, next) => {
 
   if (isLoggedIn && (to.path === '/login' || to.path === '/signup')) {
     if (role === 'sitter') {
-      try {
-        const res = await axios.get('/api/user/me', {
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'ngrok-skip-browser-warning': 'true'
-            }
-        });
-        
-        const userData = res.data;
-        if ((!userData.certifications || userData.certifications.length === 0) && to.path !== '/onboarding') {
-             next('/onboarding');
-             return;
-        }
-      } catch (e) {
-        console.error(e);
-      }
       next('/teacher-home');
     } else {
       next('/home');

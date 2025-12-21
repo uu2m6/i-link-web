@@ -2,53 +2,71 @@
   <div class="page-container">
     <TheHeader />
     
-    <div class="content-wrapper">
-      <header class="home-header">
-        <h1>👋 안녕하세요, {{ userName }} 선생님!</h1>
-        <p>오늘도 아이들과 행복한 시간을 만들어보세요.</p>
+    <main class="main-container">
+      <div class="content-grid">
         
-        <button class="cert-link-btn" @click="$router.push('/onboarding')">
-          📄 자격 증명 서류 제출하기 >
-        </button>
-      </header>
-
-      <section class="request-section">
-        <h2>📋 들어온 돌봄 요청</h2>
-        <div v-if="requests.length === 0" class="empty-state">
-           <p>아직 들어온 요청이 없거나, 정보를 불러오는 중입니다.</p>
-        </div>
-        
-        <div class="card-list">
-          <div 
-            v-for="req in requests" 
-            :key="req.id" 
-            class="request-card"
-            @click="goToDetail(req.id)"
-          >
-            <div class="card-header">
-              <span class="badge new">NEW</span>
-              <span class="date">{{ formatDate(req.created_at) }}</span>
-            </div>
-            <div class="card-body">
-              <h3>{{ req.parent_name }} 학부모님</h3>
-              <div class="info-row">
-                <span class="icon">📍</span>
-                <span>{{ req.location }}</span>
-              </div>
-              <div class="info-row">
-                <span class="icon">⏰</span>
-                <span>{{ formatTime(req.start_time) }} ({{ req.duration }}시간)</span>
-              </div>
-              <div class="info-row highlight">
-                <span class="icon">💰</span>
-                <span>{{ formatPay(req.hourly_pay) }}원</span>
-              </div>
-            </div>
-            <button class="detail-btn">확인하기</button>
+        <section class="request-section">
+          <h2>📋 들어온 돌봄 요청</h2>
+          
+          <div v-if="requests.length === 0" class="empty-state">
+             <p>아직 들어온 요청이 없거나, 정보를 불러오는 중입니다.</p>
           </div>
-        </div>
-      </section>
-    </div>
+          
+          <div class="card-list">
+            <div 
+              v-for="req in requests" 
+              :key="req.id" 
+              class="request-card"
+              @click="goToDetail(req.id)"
+            >
+              <div class="card-header">
+                <span class="badge new">NEW</span>
+                <span class="date">{{ formatDate(req.created_at) }}</span>
+              </div>
+              <div class="card-body">
+                <h3>{{ req.parent_name }} 학부모님</h3>
+                <div class="info-row">
+                  <span class="icon">📍</span>
+                  <span>{{ req.location }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="icon">⏰</span>
+                  <span>{{ formatTime(req.start_time) }} ({{ req.duration }}시간)</span>
+                </div>
+                <div class="info-row highlight">
+                  <span class="icon">💰</span>
+                  <span>{{ formatPay(req.hourly_pay) }}원</span>
+                </div>
+              </div>
+              <button class="detail-btn">확인하기</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="sidebar-section">
+          <div class="user-info-block">
+            <p class="welcome-msg">
+              안녕하세요,<br><strong>{{ userName }}</strong> 선생님! 👩‍🏫
+            </p>
+
+            <div class="user-actions">
+              <button class="action-btn primary" @click="$router.push('/onboarding')">
+                📄 자격 증명 제출
+              </button>
+
+              <button class="action-btn outline" @click="$router.push('/profile/edit/teacher')">
+                ⚙️ 프로필 수정
+              </button>
+
+              <button class="logout-link" @click="logout">
+                로그아웃
+              </button>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </main>
   </div>
 </template>
 
@@ -75,6 +93,7 @@ export default {
       return;
     }
     
+
     try {
       const userRes = await axios.get('/api/user/me', {
         headers: { 
@@ -87,15 +106,21 @@ export default {
       console.error(e);
       if (e.response && e.response.status === 401) {
           alert('로그인이 만료되었습니다.');
-          sessionStorage.clear();
-          localStorage.removeItem('token');
-          this.$router.push('/login');
+          this.logout();
       }
     }
+
 
     this.fetchRequests(token);
   },
   methods: {
+    logout() {
+      if(confirm('로그아웃 하시겠습니까?')) {
+        localStorage.removeItem('token');
+        sessionStorage.clear();
+        this.$router.push('/login');
+      }
+    },
     formatDate(dateStr) {
       if (!dateStr) return '';
       const date = new Date(dateStr);
@@ -133,61 +158,112 @@ export default {
 
 <style scoped>
 .page-container { background-color: #f8f9fa; min-height: 100vh; }
-.content-wrapper { max-width: 600px; margin: 0 auto; padding: 20px; }
+.main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
 
-.home-header { 
-  background-color: white; 
-  padding: 30px 20px; 
-  border-radius: 15px; 
-  margin-bottom: 25px; 
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  text-align: center;
-}
-.home-header h1 { font-size: 1.4rem; color: #333; margin: 0 0 5px 0; }
-.home-header p { color: #666; font-size: 0.95rem; margin-bottom: 20px; }
 
-.cert-link-btn {
-  background-color: #E8F5E9;
-  color: #2E7D32;
-  border: 1px solid #4CAF50;
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-.cert-link-btn:hover {
-  background-color: #4CAF50;
-  color: white;
+.content-grid {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
 }
 
-.request-section h2 { font-size: 1.2rem; margin-bottom: 15px; color: #333; padding-left: 5px; }
 
-.card-list { display: flex; flex-direction: column; gap: 15px; }
+.request-section {
+  flex: 3;
+}
+.request-section h2 { font-size: 1.4rem; margin-bottom: 20px; color: #333; font-weight: 800; }
+
+.empty-state { text-align: center; padding: 60px; color: #888; background: white; border-radius: 15px; border: 1px solid #eee; }
+
+.card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 
 .request-card { 
   background: white; 
-  padding: 20px; 
-  border-radius: 12px; 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+  padding: 25px; 
+  border-radius: 15px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
   cursor: pointer; 
-  transition: transform 0.2s; 
+  transition: all 0.2s; 
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+.request-card:hover { transform: translateY(-5px); border-color: #4CAF50; box-shadow: 0 8px 20px rgba(76, 175, 80, 0.1); }
+
+.card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+.badge.new { background-color: #ff5252; color: white; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; }
+.date { color: #888; font-size: 0.9rem; }
+
+.card-body h3 { margin: 0 0 12px 0; font-size: 1.15rem; color: #333; font-weight: 700; }
+.info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #555; font-size: 0.95rem; }
+.info-row .icon { width: 20px; text-align: center; }
+.info-row.highlight { color: #2E7D32; font-weight: bold; margin-top: 12px; font-size: 1.1rem; }
+
+.detail-btn { margin-top: auto; padding: 12px; background-color: #f1f8e9; border: none; border-radius: 10px; color: #2E7D32; font-weight: bold; cursor: pointer; margin-top: 20px; }
+.detail-btn:hover { background-color: #dcedc8; }
+
+
+.sidebar-section {
+  flex: 1;
+  min-width: 280px;
+  position: sticky;
+  top: 20px;
+}
+
+.user-info-block {
+  background-color: white;
+  border-radius: 20px;
+  padding: 30px 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  border: 1px solid #f1f3f5;
+}
+
+.welcome-msg { font-size: 1.1rem; margin-bottom: 25px; color: #333; line-height: 1.5; }
+.welcome-msg strong { color: #4CAF50; font-size: 1.3rem; }
+
+.user-actions { display: flex; flex-direction: column; gap: 12px; }
+
+.action-btn {
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
   border: 1px solid transparent;
 }
-.request-card:hover { transform: translateY(-3px); border-color: #4CAF50; }
 
-.card-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
-.badge.new { background-color: #ff5252; color: white; font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
-.date { color: #888; font-size: 0.85rem; margin-left: auto; }
+.action-btn.primary {
+  background-color: #4CAF50;
+  color: white;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+}
+.action-btn.primary:hover { background-color: #43A047; transform: translateY(-2px); }
 
-.card-body h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: #333; }
-.info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: #555; font-size: 0.95rem; }
-.info-row .icon { width: 20px; text-align: center; }
-.info-row.highlight { color: #2E7D32; font-weight: bold; margin-top: 10px; }
+.action-btn.outline {
+  background-color: white;
+  border-color: #ddd;
+  color: #555;
+}
+.action-btn.outline:hover { border-color: #4CAF50; color: #4CAF50; background-color: #f1f8e9; }
 
-.detail-btn { width: 100%; margin-top: 15px; padding: 10px; background-color: #f1f3f5; border: none; border-radius: 8px; color: #495057; font-weight: bold; cursor: pointer; }
-.detail-btn:hover { background-color: #e9ecef; }
+.logout-link {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 10px;
+}
+.logout-link:hover { color: #868e96; }
 
-.empty-state { text-align: center; padding: 40px; color: #888; background: white; border-radius: 12px; }
+
+@media (max-width: 900px) {
+  .content-grid { flex-direction: column-reverse; } 
+  .request-section, .sidebar-section { width: 100%; flex: none; }
+  .sidebar-section { position: static; margin-bottom: 30px; }
+  .content-grid { flex-direction: column; } 
+}
 </style>

@@ -164,7 +164,7 @@ export default {
   methods: {
 async fetchTeacherData() {
   try {
-    const response = await axios.get('/api/user_update/me', {
+    const response = await axios.get('/api/user/me', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'ngrok-skip-browser-warning': 'true'
@@ -172,6 +172,7 @@ async fetchTeacherData() {
     });
 
     const data = response.data;
+    console.log('불러온 정보:', data);
 
     this.teacherInfo = {
       name: data.name,
@@ -186,7 +187,7 @@ async fetchTeacherData() {
     };
 
   } catch (error) {
-    console.error(error);
+    console.error('정보 로드 실패:', error);
     alert('회원 정보를 불러오지 못했습니다.');
   }
 },
@@ -222,32 +223,38 @@ async fetchTeacherData() {
     },
 
    
-    async updateProfile() {
-      if (!confirm('프로필을 수정하시겠습니까?')) return;
+async updateProfile() {
+  if (!confirm('프로필을 수정하시겠습니까?')) return;
 
-      try {
-       
-        const payload = {
-            career: this.teacherInfo.experienceYear,
-            career_detail: this.teacherInfo.experienceDesc,
-            certifications: this.teacherInfo.certifications.filter(c => c.trim() !== ''),
-            activities: this.teacherInfo.activities,
-            hope_regions: this.teacherInfo.selectedRegions,
-            hope_pay: this.teacherInfo.wage,
-            introduction: this.teacherInfo.introduction,
-            cctv_agree: this.teacherInfo.cctvAgree === 'agree'
-        };
+  try {
+    // 보낼 데이터 준비
+    const payload = {
+        career: this.teacherInfo.experienceYear,
+        career_detail: this.teacherInfo.experienceDesc,
+        certifications: this.teacherInfo.certifications.filter(c => c.trim() !== ''),
+        activities: this.teacherInfo.activities,
+        hope_regions: this.teacherInfo.selectedRegions,
+        hope_pay: this.teacherInfo.wage,
+        introduction: this.teacherInfo.introduction,
+        cctv_agree: this.teacherInfo.cctvAgree === 'agree'
+    };
 
-
-        console.log('수정 요청 데이터:', payload);
-        alert('성공적으로 수정되었습니다!');
-        this.$router.push('/teacher-home');
-
-      } catch (error) {
-        console.error('수정 실패:', error);
-        alert('수정 중 오류가 발생했습니다.');
+    // ✅ 수정: PUT /api/user/update
+    await axios.put('/api/user/update', payload, {
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'ngrok-skip-browser-warning': 'true' 
       }
-    }
+    });
+
+    alert('성공적으로 수정되었습니다!');
+    this.$router.push('/teacher-home');
+
+  } catch (error) {
+    console.error('수정 실패:', error);
+    alert('수정 중 오류가 발생했습니다.');
+  }
+}
   }
 };
 </script>

@@ -12,7 +12,7 @@ export default {
   methods: {
     goHome() {
       // 로그인한 유저의 역할(role)을 확인합니다.
-      const userRole = localStorage.getItem('userRole');
+      const userRole = sessionStorage.getItem('userRole');
 
       if (userRole === 'sitter') {
         this.$router.push('/teacher-home'); // 선생님이면 선생님 홈으로

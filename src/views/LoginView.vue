@@ -84,36 +84,33 @@ export default {
           }
         })
 
-        // 백엔드가 수정되었다면 response.data 안에 name이 들어있습니다.
         const data = response.data
-
-        // 로그인 상태 + 역할 저장
-        localStorage.setItem('isLoggedIn', 'true')
-        localStorage.setItem('token', data.access_token)
-        localStorage.setItem('userRole', data.role) // parent | sitter
+   
+        sessionStorage.setItem('isLoggedIn', 'true')
+        sessionStorage.setItem('token', data.access_token)
+        sessionStorage.setItem('userRole', data.role) // parent | sitter
         
-        // [핵심] 서버에서 준 이름을 바로 저장합니다.
-        // 만약 백엔드 수정을 아직 안 했다면 여기서 이름이 저장되지 않습니다.
+
         if (data.name) {
-             localStorage.setItem('userName', data.name)
+             sessionStorage.setItem('userName', data.name)
         } else {
-             // 백엔드 수정 전이라도 일단 로그인되면 '회원'으로라도 저장
+
              console.warn('백엔드에서 이름을 안 보내줌. 기본값 사용')
-             localStorage.setItem('userName', '회원')
+             sessionStorage.setItem('userName', '회원')
         }
 
         if (data.user_id) {
-          localStorage.setItem('userId', data.user_id)
+          sessionStorage.setItem('userId', data.user_id)
         }
 
         const displayName = data.name || '회원'
         alert(`${displayName}님 환영합니다!`)
 
-        // 역할별 최초 이동
+
         if (data.role === 'sitter') {
           this.$router.push('/teacher-home')
         } else {
-          // 부모는 router가 역할 분기
+         
           this.$router.push('/')
         }
 

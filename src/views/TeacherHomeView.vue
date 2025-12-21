@@ -106,7 +106,7 @@ export default {
     };
   },
   mounted() {
-    this.teacherName = localStorage.getItem('userName') || '선생님';
+    this.teacherName = sessionStorage.getItem('userName') || '선생님';
   },
   methods: {
     formatDate(dateStr) {
@@ -118,7 +118,7 @@ export default {
     },
     logout() {
       if(confirm('로그아웃 하시겠습니까?')) {
-        localStorage.clear();
+        sessionStorage.clear();
         alert('로그아웃 되었습니다.');
         this.$router.push('/login');
       }

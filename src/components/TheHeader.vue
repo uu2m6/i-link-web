@@ -21,8 +21,8 @@ export default {
   },
   methods: {
     goHome() {
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
-      const role = localStorage.getItem('userRole') // 'parent' | 'sitter'
+      const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true'
+      const role = sessionStorage.getItem('userRole') // 'parent' | 'sitter'
 
       // 로그인 안 한 상태
       if (!isLoggedIn) {

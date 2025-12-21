@@ -42,14 +42,14 @@ export default {
   },
 
   mounted() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true'
     if (!isLoggedIn) {
       this.$router.push('/login')
       return
     }
 
     try {
-      const userData = localStorage.getItem('user')
+      const userData = sessionStorage.getItem('user')
       if (userData) {
         const user = JSON.parse(userData)
         this.form = {
@@ -66,8 +66,8 @@ export default {
   methods: {
     handleUpdate() {
       // 수정된 정보 저장
-      localStorage.setItem('user', JSON.stringify(this.form))
-      localStorage.setItem('userName', this.form.name)
+      sessionStorage.setItem('user', JSON.stringify(this.form))
+      sessionStorage.setItem('userName', this.form.name)
 
       alert('학부모 정보가 수정되었습니다.')
       this.$router.push('/home')

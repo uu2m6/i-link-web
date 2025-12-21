@@ -260,14 +260,10 @@ export default {
       this.closeReviewForm()
     },
 
-    // ===========================
-    // ✅ 거절 팝업 핵심 로직
-    // ===========================
-
-    // 로컬스토리지에서 "이미 확인한 거절건 id" 목록 가져오기
+  
     getRejectedAckIds() {
       try {
-        const raw = localStorage.getItem('rejected_ack_ids')
+        const raw = sessionStorage.getItem('rejected_ack_ids')
         const parsed = raw ? JSON.parse(raw) : []
         return Array.isArray(parsed) ? parsed : []
       } catch {
@@ -275,18 +271,18 @@ export default {
       }
     },
 
-    // 로컬스토리지에 저장
+    
     setRejectedAckIds(ids) {
-      localStorage.setItem('rejected_ack_ids', JSON.stringify(ids))
+      sessionStorage.setItem('rejected_ack_ids', JSON.stringify(ids))
     },
 
-    // 거절건이 있으면 팝업 띄우기(한 번만)
+   
     checkRejectedAndPopup() {
       if (this.rejectModal.visible) return
 
       const ackIds = this.getRejectedAckIds()
 
-      // status가 rejected인데 아직 ack 안 한 첫 번째 항목 찾기
+
       const target = this.careHistory.find(
         (item) => item.status === 'rejected' && !ackIds.includes(item.id)
       )

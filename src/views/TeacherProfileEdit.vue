@@ -151,7 +151,7 @@ export default {
     }
   },
   async mounted() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
     if (!isLoggedIn) {
       alert('로그인이 필요합니다.');
       this.$router.push('/login');
@@ -162,33 +162,31 @@ export default {
     await this.fetchTeacherData();
   },
   methods: {
-  async fetchTeacherData() {
+async fetchTeacherData() {
   try {
-
     const response = await axios.get('/api/user/me', {
-       headers: { 
-         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-         'ngrok-skip-browser-warning': 'true' 
-       }
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'ngrok-skip-browser-warning': 'true'
+      }
     });
-    
+
     const data = response.data;
 
-
     this.teacherInfo = {
-        name: data.name,
-        experienceYear: data.career,
-        experienceDesc: data.career_detail,
-        certifications: data.certifications ? data.certifications.split(', ') : [],
-        activities: data.activities ? data.activities.split(', ') : [],
-        selectedRegions: data.hope_regions ? data.hope_regions.split(', ') : [],
-        wage: data.hope_pay,
-        introduction: data.introduction,
-        cctvAgree: data.cctv_agree ? 'agree' : 'disagree'
+      name: data.name,
+      experienceYear: data.career || '',
+      experienceDesc: data.career_detail || '',
+      certifications: data.certifications ? data.certifications.split(', ') : [],
+      activities: data.activities ? data.activities.split(', ') : [],
+      selectedRegions: data.hope_regions ? data.hope_regions.split(', ') : [],
+      wage: data.hope_pay || null,
+      introduction: data.introduction || '',
+      cctvAgree: data.cctv_agree ? 'agree' : 'disagree'
     };
 
   } catch (error) {
-    console.error('정보 로드 실패:', error);
+    console.error(error);
     alert('회원 정보를 불러오지 못했습니다.');
   }
 },

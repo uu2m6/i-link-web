@@ -26,8 +26,8 @@ const routes = [
   {
     path: '/',
     redirect: () => {
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      const role = localStorage.getItem('userRole'); // 'parent' | 'sitter'
+      const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+      const role = sessionStorage.getItem('userRole'); // 'parent' | 'sitter'
 
       if (!isLoggedIn) return '/login';
       if (role === 'sitter') return '/teacher-home';
@@ -79,8 +79,8 @@ const router = createRouter({
  * ✅ 전역 네비게이션 가드
  */
 router.beforeEach((to, from, next) => {
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  const role = localStorage.getItem('userRole'); // 'parent' | 'sitter'
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+  const role = sessionStorage.getItem('userRole'); // 'parent' | 'sitter'
 
   const publicPages = [
     '/login',

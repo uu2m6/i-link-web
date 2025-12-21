@@ -78,7 +78,7 @@ export default {
   components: { TheHeader },
   data() {
     return {
-      userName: '선생님',
+      userName: sessionStorage.getItem('userName') || '선생님',
       requests: []
     };
   },
@@ -93,7 +93,6 @@ export default {
       return;
     }
     
-
     try {
       const userRes = await axios.get('/api/user/me', {
         headers: { 
@@ -101,7 +100,10 @@ export default {
           'ngrok-skip-browser-warning': 'true' 
         }
       });
-      this.userName = userRes.data.name;
+      if (userRes.data.name) {
+        this.userName = userRes.data.name;
+        sessionStorage.setItem('userName', this.userName);
+      }
     } catch (e) {
       console.error(e);
       if (e.response && e.response.status === 401) {
@@ -109,7 +111,6 @@ export default {
           this.logout();
       }
     }
-
 
     this.fetchRequests(token);
   },
@@ -165,7 +166,6 @@ export default {
   gap: 30px;
   align-items: flex-start;
 }
-
 
 .request-section {
   flex: 3;
@@ -258,7 +258,7 @@ export default {
 .logout-link:hover { color: #868e96; }
 
 @media (max-width: 900px) {
-  .content-grid { flex-direction: column-reverse; } /* 모바일에서는 사이드바가 위로 */
+  .content-grid { flex-direction: column-reverse; }
   .request-section, .sidebar-section { width: 100%; flex: none; }
   .sidebar-section { position: static; margin-bottom: 30px; }
 }

@@ -194,7 +194,7 @@ export default {
 
 .card-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
 .tag-new { background: #ff4d4f; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-.date { color: #888; font-size: 0.9rem; }
+.date { color: #888; font-size: 0.9rem; margin-left: auto; }
 .parent-name { margin: 0 0 10px 0; font-size: 1.1rem; color: #333; }
 
 .card-info p { margin: 5px 0; font-size: 0.95rem; color: #555; }

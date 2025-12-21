@@ -34,7 +34,6 @@
             <p><strong>💰 수익금:</strong> {{ req.pay.toLocaleString() }}원</p>
           </div>
 
-          <!-- 🔥 신고 버튼 (선생님도 학부모 신고 가능) -->
           <button class="btn-report" @click="openReportModal(req)">
             🚨 학부모 신고하기
           </button>
@@ -147,7 +146,6 @@ export default {
       }
     },
 
-    // 신고 모달 제어
     openReportModal(req) {
       this.reportModal.targetName = req.parentName
       this.reportModal.targetId = req.id

@@ -58,18 +58,18 @@
         <div v-if="userType === 'parent'" class="conditional-section">
           <p class="section-title">학부모님 정보 입력</p>
 
-      <div class="input-group">
-         <label>아이 수 (명)</label>
-           <div class="counter-box">
-             <button type="button" class="counter-btn" @click="decreaseChildCount" :disabled="parentInfo.numChildren <= 1">
-      −
-     </button>
-     <span class="count-display">{{ parentInfo.numChildren }}명</span>
-      <button type="button" class="counter-btn" @click="increaseChildCount" :disabled="parentInfo.numChildren >= 10">
-      +
-    </button>
-  </div>
-</div>
+          <div class="input-group">
+            <label>아이 수 (명)</label>
+            <div class="counter-box">
+              <button type="button" class="counter-btn" @click="decreaseChildCount" :disabled="parentInfo.numChildren <= 1">
+                −
+              </button>
+              <span class="count-display">{{ parentInfo.numChildren }}명</span>
+              <button type="button" class="counter-btn" @click="increaseChildCount" :disabled="parentInfo.numChildren >= 10">
+                +
+              </button>
+            </div>
+          </div>
 
           <div v-for="(child, index) in parentInfo.children" :key="index" class="child-info-box">
             <p class="child-info-title">{{ index + 1 }}번째 아이 정보</p>
@@ -193,6 +193,16 @@
               </select>
               <button class="address-btn" @click="addTeacherRegion" :disabled="!teacherRegionSelect.district">추가</button>
             </div>
+
+            <div style="margin-top: 10px;">
+              <button type="button" class="location-btn" @click="verifyLocation" :disabled="teacherInfo.selectedRegions.length === 0">
+                📍 내 위치와 일치하는지 확인하기
+              </button>
+              <p v-if="locationStatus.message" :class="['status-msg', locationStatus.success ? 'success' : 'error']">
+                {{ locationStatus.message }}
+              </p>
+            </div>
+
             <div class="selected-tags-area" v-if="teacherInfo.selectedRegions.length > 0">
               <span v-for="region in teacherInfo.selectedRegions" :key="region" class="tag">
                 {{ region }} <button @click="removeTeacherRegion(region)">x</button>
@@ -291,6 +301,11 @@ export default {
       passwordError: '',
       agreed: false,
       regionData: regionData,
+
+      locationStatus: {
+        success: false,
+        message: ''
+      },
 
       parentInfo: {
         numChildren: 1,
@@ -412,6 +427,64 @@ export default {
         this.$emit('show-modal', { message: '돌봄 종류는 최대 3개까지 선택 가능합니다.', onConfirm: ()=>{} });
         this.parentInfo.careTypes.pop();
       }
+    },
+
+    async verifyLocation() {
+      if (this.teacherInfo.selectedRegions.length === 0) {
+        alert("먼저 희망 활동 지역을 선택해서 추가해주세요.");
+        return;
+      }
+
+      this.locationStatus = { success: false, message: '위치 정보를 가져오는 중...' };
+
+      if (!("geolocation" in navigator)) {
+        this.locationStatus = { success: false, message: '이 브라우저는 위치 정보를 지원하지 않습니다.' };
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            console.log(`위도: ${lat}, 경도: ${lon}`);
+
+            const actualAddress = await this.mockReverseGeocoding(lat, lon); 
+
+            const selectedRegion = this.teacherInfo.selectedRegions[0];
+
+            const response = await axios.post('/api/auth/region-check', {
+              address: actualAddress,
+              regions: selectedRegion
+            });
+
+            if (response.data.match) {
+              this.locationStatus = { success: true, message: '✅ 인증 성공: 현재 위치와 활동 지역이 일치합니다.' };
+            } else {
+              this.locationStatus = { success: false, message: `❌ 인증 실패: 실제 위치(${actualAddress})가 다릅니다.` };
+            }
+
+          } catch (error) {
+            console.error(error);
+            this.locationStatus = { success: false, message: '위치 확인 중 오류가 발생했습니다.' };
+          }
+        },
+        (error) => {
+          console.error(error);
+          this.locationStatus = { success: false, message: '위치 정보 접근이 거부되었습니다.' };
+        }
+      );
+    },
+
+    async mockReverseGeocoding(lat, lon) {
+      return new Promise((resolve) => {
+        console.log(`좌표 변환 요청: 위도 ${lat}, 경도 ${lon}`);
+        setTimeout(() => {
+          const mockAddress = this.teacherInfo.selectedRegions[0] || "서울 강남구"; 
+          resolve(mockAddress);
+        }, 1000);
+      });
     },
 
     validateInputs() {
@@ -626,7 +699,7 @@ hr { border: none; border-top: 1px solid #eee; margin: 30px 0; }
   justify-content: space-between;
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  width: 160px; /* 너비 */
+  width: 160px;
   overflow: hidden;
   background-color: white;
 }
@@ -663,5 +736,35 @@ hr { border: none; border-top: 1px solid #eee; margin: 30px 0; }
   user-select: none;
 }
 
+.location-btn {
+  background-color: #ffffff;
+  border: 1px solid #4CAF50;
+  color: #4CAF50;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.2s;
+  width: 100%;
+}
 
+.location-btn:hover {
+  background-color: #e8f5e9;
+}
+
+.location-btn:disabled {
+  border-color: #ccc;
+  color: #999;
+  cursor: not-allowed;
+  background-color: #f9f9f9;
+}
+
+.status-msg {
+  font-size: 13px;
+  margin-top: 5px;
+  font-weight: bold;
+}
+.status-msg.success { color: #2E7D32; }
+.status-msg.error { color: #d32f2f; }
 </style>

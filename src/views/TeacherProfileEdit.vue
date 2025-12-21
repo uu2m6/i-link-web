@@ -239,7 +239,6 @@ async updateProfile() {
         cctv_agree: this.teacherInfo.cctvAgree === 'agree'
     };
 
-    // ✅ 수정: PUT /api/user/update
     await axios.put('/api/user/update', payload, {
       headers: { 
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -280,19 +279,17 @@ async updateProfile() {
 .disabled-input { background-color: #f5f5f5; color: #888; cursor: not-allowed; }
 .hint { font-size: 0.8rem; color: #888; margin-top: 4px; display: block; }
 
-/* 자격증 리스트 */
 .cert-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .icon-btn.remove { background: #ffebee; color: #d32f2f; border: none; width: 40px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 .add-btn { width: 100%; padding: 10px; background-color: #f1f8e9; color: #2e7d32; border: 1px dashed #4CAF50; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
 .add-btn:hover { background-color: #e8f5e9; }
 
-/* 활동 체크박스 */
+
 .checkbox-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .checkbox-grid label { display: inline-flex; align-items: center; cursor: pointer; background: #f8f9fa; padding: 8px 12px; border-radius: 20px; border: 1px solid #eee; transition: 0.2s; }
 .checkbox-grid input { display: none; }
 .checkbox-grid label:has(input:checked) { background: #e8f5e9; border-color: #4CAF50; color: #2e7d32; font-weight: bold; }
 
-/* 지역 선택 */
 .address-group { display: flex; gap: 8px; margin-bottom: 10px; }
 .address-group select { flex: 1; }
 .address-btn { padding: 0 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
@@ -302,13 +299,11 @@ async updateProfile() {
 .tag { background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
 .tag button { background: none; border: none; color: #2e7d32; cursor: pointer; font-weight: bold; font-size: 1rem; padding: 0; }
 
-/* 라디오 버튼 */
 .radio-group.horizontal { display: flex; gap: 10px; }
 .radio-group label { flex: 1; text-align: center; padding: 12px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.2s; }
 .radio-group input { display: none; }
 .radio-group label.active { background: #e8f5e9; border-color: #4CAF50; color: #2e7d32; font-weight: bold; }
 
-/* 하단 버튼 */
 .button-group { display: flex; gap: 10px; margin-top: 30px; }
 .button-group button { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
 .btn-cancel { background-color: #e9ecef; color: #555; }

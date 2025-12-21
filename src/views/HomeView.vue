@@ -26,7 +26,12 @@
           </div>
 
           <div v-else>
-            <h2>📋 내 돌봄 신청 현황</h2>
+            <div class="section-header-row">
+              <h2>📋 내 돌봄 신청 현황</h2>
+              <button class="view-history-link" @click="$router.push('/history')">
+                전체 내역 보기 >
+              </button>
+            </div>
             
             <div v-if="myMatches.length === 0" class="empty-state">
               <p>신청한 돌봄 내역이 없습니다.</p>
@@ -64,6 +69,7 @@
               반가워요, <strong>{{ userName }}</strong>님! 👋
             </p>
             <div class="user-actions">
+              <BaseButton type="primary" @click="$router.push('/history')">📋 내 돌봄 내역</BaseButton>
               <BaseButton type="secondary" @click="$router.push('/procareapply')">📝 돌봄 공고 올리기</BaseButton>
               <BaseButton type="outline" @click="$router.push('/profile/edit/parent')">⚙️ 내 정보 수정</BaseButton>
               <button class="logout-link" @click="logout">로그아웃</button>
@@ -101,7 +107,6 @@ export default {
     if (token) {
       this.isLoggedIn = true;
       
-  
       try {
         const userRes = await axios.get('/api/user/me', {
            headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
@@ -166,6 +171,29 @@ export default {
 .welcome-msg strong { color: #F59E0B; }
 .user-actions { display: flex; flex-direction: column; gap: 10px; }
 .logout-link { background: none; border: none; color: #adb5bd; text-decoration: underline; cursor: pointer; margin-top: 15px; font-size: 0.85rem; }
+
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.section-header-row h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.view-history-link {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.view-history-link:hover {
+  color: #F59E0B;
+  text-decoration: underline;
+}
 
 .recommendation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
 .teacher-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; }

@@ -34,6 +34,7 @@
 
         <div class="btn-group">
           <button class="back-btn" @click="$router.go(-1)">목록으로</button>
+          <button class="reject-btn" @click="rejectRequest">거절하기</button>
           <button class="accept-btn" @click="acceptRequest">수락하기</button>
         </div>
       </div>
@@ -95,8 +96,17 @@ export default {
     },
     acceptRequest() {
       if(!this.requestData) return;
-      alert(`${this.requestData.parent_name}님의 요청을 수락했습니다!\n(채팅방이 생성됩니다)`);
-      this.$router.push('/teacher-home');
+      if(confirm('이 요청을 수락하시겠습니까?')) {
+        alert(`${this.requestData.parent_name}님의 요청을 수락했습니다!\n(채팅방이 생성됩니다)`);
+        this.$router.push('/teacher-home');
+      }
+    },
+    rejectRequest() {
+      if(!this.requestData) return;
+      if(confirm('정말 거절하시겠습니까?')) {
+        alert('거절 처리되었습니다.');
+        this.$router.push('/teacher-home');
+      }
     }
   }
 };
@@ -126,9 +136,13 @@ export default {
 
 .btn-group { display: flex; gap: 10px; }
 .back-btn { flex: 1; padding: 15px; border-radius: 12px; border: 1px solid #ddd; background: white; color: #666; font-weight: bold; cursor: pointer; }
+
+
+.reject-btn { flex: 2; padding: 15px; border-radius: 12px; border: none; background: #FFEBEE; color: #D32F2F; font-weight: bold; cursor: pointer; font-size: 1rem; }
 .accept-btn { flex: 2; padding: 15px; border-radius: 12px; border: none; background: #4CAF50; color: white; font-weight: bold; cursor: pointer; font-size: 1rem; }
 
 .back-btn:hover { background-color: #f5f5f5; }
+.reject-btn:hover { background-color: #FFCDD2; }
 .accept-btn:hover { background-color: #43A047; }
 
 .error-msg { text-align: center; padding: 50px; color: #888; }

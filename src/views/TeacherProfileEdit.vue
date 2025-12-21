@@ -164,7 +164,7 @@ export default {
   methods: {
 async fetchTeacherData() {
   try {
-    const response = await axios.get('/api/user/me', {
+    const response = await axios.get('/api/user_update/me', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'ngrok-skip-browser-warning': 'true'

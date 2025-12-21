@@ -78,7 +78,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import BaseButton from '../components/BaseButton.vue'
 import TheHeader from '../components/TheHeader.vue'
 
@@ -90,7 +89,7 @@ export default {
   data() {
     return {
       isLoggedIn: false,
-      userName: '',
+      userName: sessionStorage.getItem('userName') || '학부모',
       recommendedTeachers: [
         { id: 1, name: '김선생님', tags: '#실내놀이 #영어' },
         { id: 2, name: '이선생님', tags: '#등하원 #책읽기' },
@@ -101,48 +100,28 @@ export default {
       ]
     }
   },
-  async mounted() {
-
+  mounted() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     
     if (token) {
       this.isLoggedIn = true;
-      
-
-      try {
-        const response = await axios.get('/api/user/me', {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'ngrok-skip-browser-warning': 'true'
-          }
-        });
-        this.userName = response.data.name;
-      } catch (error) {
-        console.error('사용자 정보 로드 실패:', error);
-
-        this.isLoggedIn = false;
-        localStorage.removeItem('token');
-        sessionStorage.clear();
-      }
+      this.userName = sessionStorage.getItem('userName') || '회원';
     } else {
       this.isLoggedIn = false;
     }
   },
   methods: {
     logout() {
-      if(confirm('로그아웃 하시겠습니까?')) {
         localStorage.removeItem('token');
         sessionStorage.clear();
         this.isLoggedIn = false;
         this.$router.push('/login');
-      }
     }
   }
 }
 </script>
 
 <style scoped>
-
 .home-page {
   background-color: #f8f9fa;
   min-height: 100vh;
@@ -237,7 +216,7 @@ export default {
 .teacher-photo {
   height: 160px;
   background-color: #f1f3f5; 
-  background-image: url('https://via.placeholder.com/300x200?text=Teacher'); 
+  background-image: url('https://via.placeholder.com/300x200?text=Teacher');
   background-size: cover;
   background-position: center;
 }
@@ -264,14 +243,12 @@ export default {
   margin: 0;
 }
 
-
 .sidebar-section {
-  flex: 1; /* 좁은 공간 */
+  flex: 1;
   min-width: 300px;
   position: sticky;
   top: 20px;
 }
-
 
 .login-block,
 .user-info-block,
@@ -346,7 +323,7 @@ export default {
   .sidebar-section {
     min-width: auto;
     position: static;
-    order: -1; 
+    order: -1;
   }
 
   .recommendation-grid {

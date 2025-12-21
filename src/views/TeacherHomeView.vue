@@ -9,7 +9,7 @@
           <h2>📋 들어온 돌봄 요청</h2>
           
           <div v-if="requests.length === 0" class="empty-state">
-             <p>아직 들어온 요청이 없거나, 정보를 불러오는 중입니다.</p>
+             <p>아직 들어온 요청이 없습니다.</p>
           </div>
           
           <div class="card-list">
@@ -71,7 +71,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import TheHeader from '../components/TheHeader.vue';
 
 export default {
@@ -79,10 +78,29 @@ export default {
   data() {
     return {
       userName: sessionStorage.getItem('userName') || '선생님',
-      requests: []
+      requests: [
+        {
+          id: 1,
+          parent_name: '이영희',
+          location: '서울 강남구 역삼동',
+          start_time: '14:00:00',
+          duration: 3,
+          hourly_pay: 15000,
+          created_at: '2025-12-20T09:00:00'
+        },
+        {
+          id: 2,
+          parent_name: '박철수',
+          location: '서울 서초구 반포동',
+          start_time: '10:00:00',
+          duration: 4,
+          hourly_pay: 18000,
+          created_at: '2025-12-21T11:00:00'
+        }
+      ]
     };
   },
-  async mounted() {
+  mounted() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     
     if (!token) {
@@ -92,27 +110,6 @@ export default {
       this.$router.push('/login');
       return;
     }
-    
-    try {
-      const userRes = await axios.get('/api/user/me', {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'ngrok-skip-browser-warning': 'true' 
-        }
-      });
-      if (userRes.data.name) {
-        this.userName = userRes.data.name;
-        sessionStorage.setItem('userName', this.userName);
-      }
-    } catch (e) {
-      console.error(e);
-      if (e.response && e.response.status === 401) {
-          alert('로그인이 만료되었습니다.');
-          this.logout();
-      }
-    }
-
-    this.fetchRequests(token);
   },
   methods: {
     logout() {
@@ -135,23 +132,6 @@ export default {
     },
     goToDetail(id) {
       this.$router.push(`/teacher/request/${id}`);
-    },
-    
-    async fetchRequests(token) {
-      try {
-        const response = await axios.get('/api/match/teacher/requests', {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'ngrok-skip-browser-warning': 'true'
-          }
-        });
-        
-        this.requests = response.data;
-
-      } catch (error) {
-        console.error(error);
-        this.requests = []; 
-      }
     }
   }
 };

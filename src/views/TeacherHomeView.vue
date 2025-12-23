@@ -48,6 +48,7 @@
           </div>
         </section>
 
+        <!-- 👉 오른쪽 사이드바 -->
         <aside class="sidebar-section">
           <div class="user-info-block">
             <p class="welcome-msg">
@@ -63,11 +64,24 @@
                 {{ certBtnText }}
               </button>
 
-              <button class="action-btn outline" @click="$router.push('/teacher/history')">
+              <button
+                class="action-btn outline"
+                @click="$router.push('/chats')"
+              >
+                💬 내 채팅
+              </button>
+
+              <button
+                class="action-btn outline"
+                @click="$router.push('/teacher/history')"
+              >
                 📂 내역 관리
               </button>
 
-              <button class="action-btn outline" @click="$router.push('/profile/edit/teacher')">
+              <button
+                class="action-btn outline"
+                @click="$router.push('/profile/edit/teacher')"
+              >
                 ⚙️ 프로필 수정
               </button>
 
@@ -152,7 +166,7 @@ export default {
       }
     },
     fetchRequests() {
-      // 실제 API 연동 시 axios 호출
+      // 더미 데이터
       this.requests = [
         {
           id: 1,
@@ -195,68 +209,5 @@ export default {
 <style scoped>
 .page-container { background-color: #f8f9fa; min-height: 100vh; }
 .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-
-.content-grid {
-  display: flex;
-  gap: 30px;
-  align-items: flex-start;
-}
-
-/* 왼쪽 컨텐츠 영역 */
-.request-section { flex: 3; }
-.section-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.section-header-row h2 { margin: 0; font-size: 1.4rem; color: #333; font-weight: 800; }
-.view-history-link { background: none; border: none; color: #666; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
-.view-history-link:hover { color: #4CAF50; text-decoration: underline; }
-
-.empty-state { text-align: center; padding: 60px; color: #888; background: white; border-radius: 15px; border: 1px solid #eee; }
-.card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-
-.request-card { 
-  background: white; padding: 25px; border-radius: 15px; 
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s; 
-  border: 1px solid transparent; display: flex; flex-direction: column;
-}
-.request-card:hover { transform: translateY(-5px); border-color: #4CAF50; box-shadow: 0 8px 20px rgba(76, 175, 80, 0.1); }
-.card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-.badge.new { background-color: #ff5252; color: white; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; }
-.date { color: #888; font-size: 0.9rem; }
-.card-body h3 { margin: 0 0 12px 0; font-size: 1.15rem; color: #333; font-weight: 700; }
-.info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #555; font-size: 0.95rem; }
-.info-row.highlight { color: #2E7D32; font-weight: bold; margin-top: 12px; font-size: 1.1rem; }
-.detail-btn { margin-top: auto; padding: 12px; background-color: #f1f8e9; border: none; border-radius: 10px; color: #2E7D32; font-weight: bold; cursor: pointer; margin-top: 20px; }
-.detail-btn:hover { background-color: #dcedc8; }
-
-/* 오른쪽 사이드바 영역 */
-.sidebar-section {
-  flex: 1;
-  min-width: 280px;
-  position: sticky;
-  top: 20px;
-}
-.user-info-block {
-  background-color: white; border-radius: 20px; padding: 30px 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); text-align: center; border: 1px solid #f1f3f5;
-}
-.welcome-msg { font-size: 1.1rem; margin-bottom: 25px; color: #333; line-height: 1.5; }
-.welcome-msg strong { color: #4CAF50; font-size: 1.3rem; }
-.user-actions { display: flex; flex-direction: column; gap: 12px; }
-
-.action-btn {
-  padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer;
-  font-size: 0.95rem; transition: all 0.2s; border: 1px solid transparent;
-}
-.action-btn.primary { background-color: #4CAF50; color: #333; }
-.action-btn.pending { background-color: #E8F5E9; color: #2E7D32; cursor: default; }
-.action-btn.verified { background-color: #E8F5E9; color: #2E7D32; cursor: default; border: 1px solid #C8E6C9; }
-.action-btn.outline { background-color: white; border-color: #ddd; color: #555; }
-.action-btn.outline:hover { border-color: #4CAF50; color: #4CAF50; background-color: #f1f8e9; }
-.logout-link { background: none; border: none; color: #adb5bd; text-decoration: underline; cursor: pointer; font-size: 13px; margin-top: 10px; }
-.logout-link:hover { color: #868e96; }
-
-@media (max-width: 900px) {
-  .content-grid { flex-direction: column-reverse; }
-  .request-section, .sidebar-section { width: 100%; flex: none; }
-  .sidebar-section { position: static; margin-bottom: 30px; }
-}
+.content-grid { display: flex; gap: 30px; align-items: flex-start; }
 </style>

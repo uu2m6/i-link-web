@@ -477,36 +477,45 @@ export default {
       );
     },
 
-    async mockReverseGeocoding(lat, lon) {
-      try {
-        const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
-          params: {
-            format: 'json',
-            lat: lat,
-            lon: lon,
-            zoom: 18,
-            addressdetails: 1,
-            'accept-language': 'ko'
-          }
-        });
-
-        if (response.data && response.data.address) {
-          const addr = response.data.address;
-          let city = addr.city || addr.province || addr.state || '';
-          const district = addr.borough || addr.district || addr.suburb || '';
-
-          const shortCity = city.replace(/(특별시|광역시|특별자치시|도|특별자치도)$/g, '');
-
-          return `${shortCity} ${district}`.trim();
-        }
-        
-        return "주소 확인 불가";
-
-      } catch (error) {
-        console.error(error);
-        return '위치 확인 에러';
+   async mockReverseGeocoding(lat, lon) {
+  try {
+    const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+      params: {
+        format: 'json',
+        lat: lat,
+        lon: lon,
+        zoom: 18,
+        addressdetails: 1,
+        'accept-language': 'ko'
       }
-    },
+    });
+
+    if (response.data && response.data.address) {
+      const addr = response.data.address;
+      
+      let province = addr.province || addr.state || '';
+      let city = addr.city || addr.county || '';
+      let district = addr.district || addr.borough || addr.suburb || '';
+
+      if (!province && city) {
+         province = city;
+         city = district; 
+         district = '';
+      }
+
+      let fullAddr = `${province} ${city} ${district}`.trim();
+      fullAddr = fullAddr.replace(/(\S+)\s+\1/g, "$1");
+
+      return fullAddr;
+    }
+    
+    return "주소 확인 불가";
+
+  } catch (error) {
+    console.error(error);
+    return '위치 확인 에러';
+  }
+   },
 
     validateInputs() {
       if (!this.name) return false;

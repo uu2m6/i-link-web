@@ -477,7 +477,7 @@ export default {
       );
     },
 
-   async mockReverseGeocoding(lat, lon) {
+async mockReverseGeocoding(lat, lon) {
   try {
     const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
       params: {
@@ -500,13 +500,13 @@ export default {
       if (!province && city) {
          province = city;
          city = district; 
-         district = '';
       }
 
-      let fullAddr = `${province} ${city} ${district}`.trim();
-      fullAddr = fullAddr.replace(/(\S+)\s+\1/g, "$1");
+      if (province && city) {
+         return `${province} - ${city}`;
+      }
 
-      return fullAddr;
+      return (province || city).trim();
     }
     
     return "주소 확인 불가";
@@ -515,7 +515,7 @@ export default {
     console.error(error);
     return '위치 확인 에러';
   }
-   },
+},
 
     validateInputs() {
       if (!this.name) return false;

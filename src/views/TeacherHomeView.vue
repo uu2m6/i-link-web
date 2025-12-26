@@ -264,11 +264,11 @@ export default {
   padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer;
   font-size: 0.95rem; transition: all 0.2s; border: 1px solid transparent; width: 100%;
 }
-.action-btn.primary { background-color: #FFC107; color: #333; }
-.action-btn.pending { background-color: #FFECB3; color: #FF6F00; cursor: default; }
+.action-btn.primary { background-color: #4CAF50; color: #ffffff; }
+.action-btn.pending { background-color: #E8F5E9; color: #2E7D32; cursor: default; }
 .action-btn.verified { background-color: #E8F5E9; color: #2E7D32; cursor: default; border: 1px solid #C8E6C9; }
 
-.action-btn.outline { background-color: white; border: 1px solid #ddd; color: #555; }
+.action-btn.outline { background-color: #FFFFFF; border: 1px solid #ddd; color: #555; }
 .action-btn.outline:hover { border-color: #4CAF50; color: #4CAF50; background-color: #f1f8e9; }
 
 .logout-link { 

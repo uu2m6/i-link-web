@@ -574,7 +574,7 @@ export default {
 
         if (this.userType === 'parent') {
           fullAddress = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict} ${this.parentInfo.detailAddress}`.trim();
-          regionValue = `${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict}`;
+          regionValue = [`${this.parentInfo.selectedProvince} ${this.parentInfo.selectedDistrict}`];
         } else {
           fullAddress = this.teacherInfo.selectedRegions[0] || '주소 미입력';
           regionValue = this.teacherInfo.selectedRegions;

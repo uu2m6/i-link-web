@@ -9,198 +9,108 @@
       </div>
 
       <div class="tabs">
-        <button
-          :class="{ active: currentFilter === 'all' }"
-          @click="currentFilter = 'all'"
-        >전체</button>
-        <button
-          :class="{ active: currentFilter === 'pending' }"
-          @click="currentFilter = 'pending'"
-        >대기중 🔥</button>
-        <button
-          :class="{ active: currentFilter === 'confirmed' }"
-          @click="currentFilter = 'confirmed'"
-        >확정됨</button>
+        <button 
+          :class="{ active: currentFilter === 'all' }" 
+          @click="changeFilter('all')"
+        >
+          전체
+        </button>
+        <button 
+          :class="{ active: currentFilter === 'pending' }" 
+          @click="changeFilter('pending')"
+        >
+          대기중 
+        </button>
+        <button 
+          :class="{ active: currentFilter === 'confirmed' }" 
+          @click="changeFilter('confirmed')"
+        >
+          확정됨
+        </button>
       </div>
 
-      <div class="request-list">
+      <div v-if="isLoading" class="msg">내역을 불러오는 중입니다...</div>
+      <div v-else-if="requests.length === 0" class="msg">해당하는 내역이 없습니다.</div>
+
+      <div v-else class="request-list">
         <div
-          v-for="req in filteredRequests"
-          :key="req.id"
+          v-for="req in requests"
+          :key="req.match_id"
           class="request-card"
-          :class="{ highlight: req.status === 'pending' }"
+          :class="{ highlight: req.is_pending }"
+          @click="goToDetail(req.match_id)"
         >
           <div class="card-header">
-            <span class="parent-name">{{ req.parentName }} 학부모님</span>
+            <span class="parent-name">{{ req.parent_name }}</span>
+            
             <span :class="['status-badge', req.status]">
-              {{ getStatusText(req.status) }}
+              {{ req.display_status }}
             </span>
           </div>
 
           <div class="card-body">
-            <p><strong>📅 일시:</strong> {{ req.date }} / {{ req.time }}</p>
-            <p><strong>📍 장소:</strong> {{ req.location }}</p>
-            <p><strong>💰 수익금:</strong> {{ req.pay.toLocaleString() }}원</p>
-          </div>
-
-          <!-- 🔥 채팅 버튼 -->
-          <button class="btn-chat" @click="openChat(req)">
-            💬 학부모와 채팅
-          </button>
-
-          <button class="btn-report" @click="openReportModal(req)">
-            🚨 학부모 신고하기
-          </button>
-
-          <div v-if="req.status === 'pending'" class="action-buttons">
-            <button class="btn-reject" @click="handleReject(req.id)">거절</button>
-            <button class="btn-accept" @click="handleAccept(req.id)">수락</button>
-          </div>
-
-          <div v-else class="status-msg">
-            {{ req.status === 'in-progress'
-              ? '✅ 매칭되어 진행 중입니다.'
-              : '❌ 거절/취소된 건입니다.' }}
-          </div>
-        </div>
-
-        <div v-if="filteredRequests.length === 0" class="empty-state">
-          <p>해당하는 신청 내역이 없습니다.</p>
+            <p><strong>📍 장소:</strong> {{ req.location || '주소 정보 없음' }}</p>
+            
+            <p class="date-info">요청일: {{ req.date_time }}</p>
+            
+            </div>
         </div>
       </div>
     </main>
-
-    <Teleport to="body">
-      <ReportModal
-        :isVisible="reportModal.visible"
-        :targetName="reportModal.targetName"
-        :targetId="reportModal.targetId"
-        @close="closeReportModal"
-      />
-    </Teleport>
   </div>
 </template>
 
 <script>
-import TheHeader from '@/components/TheHeader.vue'
-import ReportModal from '@/components/ReportModal.vue'
+import axios from 'axios';
+import TheHeader from '../components/TheHeader.vue';
 
 export default {
-  components: { TheHeader, ReportModal },
+  components: { TheHeader },
   data() {
     return {
-      currentFilter: 'all',
-
-      // 🔹 더미 데이터
-      requests: [
-        {
-          id: 1,
-          parentName: '이영희',
-          status: 'pending',
-          date: '2025.10.20',
-          time: '14:00 (3시간)',
-          location: '서울 강남구 역삼동',
-          pay: 45000
-        },
-        {
-          id: 2,
-          parentName: '박철수',
-          status: 'in-progress',
-          date: '2025.10.18',
-          time: '10:00 (2시간)',
-          location: '서울 서초구 반포동',
-          pay: 30000
-        },
-        {
-          id: 3,
-          parentName: '최민수',
-          status: 'rejected',
-          date: '2025.10.15',
-          time: '09:00 (4시간)',
-          location: '서울 송파구 잠실동',
-          pay: 60000
-        }
-      ],
-
-      reportModal: {
-        visible: false,
-        targetName: '',
-        targetId: null
-      }
-    }
+      currentFilter: 'all', 
+      requests: [],
+      isLoading: false
+    };
   },
-  computed: {
-    filteredRequests() {
-      if (this.currentFilter === 'all') return this.requests
-      if (this.currentFilter === 'pending') {
-        return this.requests.filter(r => r.status === 'pending')
-      }
-      if (this.currentFilter === 'confirmed') {
-        return this.requests.filter(r => r.status === 'in-progress')
-      }
-      return this.requests
-    }
+  async mounted() {
+    await this.fetchRequests();
   },
   methods: {
-    /* ---------- 채팅 ---------- */
-    openChat(req) {
-      const sitterId = sessionStorage.getItem('userId') || 'sitter'
-      const parentId = `parent_${req.id}`
-      const roomId = `${parentId}_${sitterId}`
-
-      const key = `chatRoom:${roomId}`
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem(
-          key,
-          JSON.stringify({
-            otherId: parentId,
-            otherName: req.parentName
-          })
-        )
-      }
-
-      this.$router.push(`/chat/${roomId}`)
+    changeFilter(filter) {
+      this.currentFilter = filter;
+      this.fetchRequests();
     },
 
-    /* ---------- 상태 ---------- */
-    getStatusText(status) {
-      const map = {
-        pending: '수락 대기',
-        'in-progress': '매칭 확정',
-        rejected: '거절됨'
-      }
-      return map[status] || status
-    },
+    async fetchRequests() {
+      this.isLoading = true;
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-    handleAccept(id) {
-      if (confirm('수락하시겠습니까?')) {
-        const item = this.requests.find(r => r.id === id)
-        if (item) item.status = 'in-progress'
+        const res = await axios.get('/api/match/sitter/list', {
+          params: { filter_status: this.currentFilter },
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true' 
+          }
+        });
+        
+        this.requests = res.data;
+
+      } catch (error) {
+        console.error("목록 로드 실패:", error);
+      } finally {
+        this.isLoading = false;
       }
     },
 
-    handleReject(id) {
-      if (confirm('거절하시겠습니까?')) {
-        const item = this.requests.find(r => r.id === id)
-        if (item) item.status = 'rejected'
-      }
+    goToDetail(matchId) {
+      this.$router.push(`/teacher/request/${matchId}`);
     },
-
-    /* ---------- 신고 ---------- */
-    openReportModal(req) {
-      this.reportModal.targetName = req.parentName
-      this.reportModal.targetId = req.id
-      this.reportModal.visible = true
-    },
-    closeReportModal() {
-      this.reportModal.visible = false
-      this.reportModal.targetName = ''
-      this.reportModal.targetId = null
-    }
   }
 }
 </script>
-
 <style scoped>
 .manage-page { background-color: #f8f9fa; min-height: 100vh; }
 .manage-container { max-width: 600px; margin: 0 auto; padding: 20px; }

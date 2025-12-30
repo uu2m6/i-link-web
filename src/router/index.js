@@ -17,10 +17,8 @@ import TeacherProfileEdit from '../views/TeacherProfileEdit.vue';
 import TeacherHomeView from '@/views/TeacherHomeView.vue';
 import TeacherRequestDetailView from '../views/TeacherRequestDetailView.vue';
 import TeacherHistoryView from '../views/TeacherHistoryView.vue';
-
-// 채팅 관련 뷰
 import ChatView from '../views/ChatView.vue';
-import ChatListView from '../views/ChatListView.vue';
+
 const routes = [
   {
     path: '/',
@@ -55,7 +53,6 @@ const routes = [
   { path: '/teacher/history', name: 'TeacherHistory', component: TeacherHistoryView },
 
   // 채팅
-  { path: '/chats', name: 'ChatList', component: ChatListView }, 
   { path: '/chat/:roomId', name: 'Chat', component: ChatView },  
 
   // 오류 

@@ -3,26 +3,25 @@
     <TheHeader />
 
     <main class="chat-container">
-      <!-- 채팅방 헤더 -->
       <ChatRoomHeader :otherName="otherName" />
 
-      <!-- 메시지 목록 -->
       <div class="chat-body" ref="chatBody">
+        <div v-if="isLoading" class="loading">메시지 로딩 중...</div>
         <ChatMessage
-          v-for="msg in messages"
-          :key="msg.id"
+          v-for="(msg, index) in messages"
+          :key="index"
           :message="msg"
           :myId="myId"
         />
       </div>
 
-      <!-- 입력창 -->
       <ChatInput @send="sendMessage" />
     </main>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 import TheHeader from '@/components/TheHeader.vue'
 import ChatRoomHeader from '@/components/ChatRoomHeader.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
@@ -30,90 +29,103 @@ import ChatInput from '@/components/ChatInput.vue'
 
 export default {
   name: 'ChatView',
-  components: {
-    TheHeader,
-    ChatRoomHeader,
-    ChatMessage,
-    ChatInput
-  },
+  components: { TheHeader, ChatRoomHeader, ChatMessage, ChatInput },
   data() {
     return {
-      roomId: '',
-      myId: '',
-      otherId: '',
-      otherName: '상대',
-      messages: []
+      roomId: null,
+      myId: null,
+      otherName: '상대방',
+      messages: [],
+      socket: null,
+      isLoading: false
     }
   },
-  mounted() {
-    // 1) roomId
-    this.roomId = this.$route.params.roomId
+  async mounted() {
+    this.roomId = this.$route.params.roomId 
 
-    // 2) 내 ID
-    this.myId = localStorage.getItem('userId') || 'me'
+    await this.fetchMyInfo(); 
 
-    // 3) 상대 정보
-    const roomMeta = JSON.parse(
-      localStorage.getItem(`chatRoom:${this.roomId}`) || '{}'
-    )
-    this.otherId = roomMeta.otherId || 'other'
-    this.otherName = roomMeta.otherName || '상대'
-
-    // 4) 메시지 로드
-    this.loadMessages()
-
-    // 5) 스크롤
-    this.$nextTick(this.scrollToBottom)
+    if (this.myId) {
+      this.fetchHistory();
+      this.connectWebSocket();
+    } else {
+      alert("사용자 정보를 불러오지 못했습니다. 다시 로그인해주세요.");
+      this.$router.push('/login');
+    }
   },
+
   methods: {
-    loadMessages() {
-      const saved = localStorage.getItem(`chat:${this.roomId}`)
-      if (saved) {
-        this.messages = JSON.parse(saved)
-      } else {
-        this.messages = [
-          {
-            id: 1,
-            senderId: this.otherId,
-            text: '안녕하세요! 문의 주셔서 감사합니다 :)',
-            time: this.nowTime()
-          },
-          {
-            id: 2,
-            senderId: this.myId,
-            text: '안녕하세요! 돌봄 가능 시간 문의드려요.',
-            time: this.nowTime()
+    async fetchMyInfo() {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) throw new Error("토큰 없음");
+
+        const res = await axios.get('/api/user/me', {
+          headers: { 
+            'Authorization': `Bearer ${token}`, 
+            'ngrok-skip-browser-warning': 'true' 
           }
-        ]
-        this.saveMessages()
+        });
+        this.myId = res.data.id; 
+      } catch (e) {
+        console.error("내 정보 로드 실패", e);
       }
     },
-    saveMessages() {
-      localStorage.setItem(
-        `chat:${this.roomId}`,
-        JSON.stringify(this.messages)
-      )
+    async fetchHistory() {
+      this.isLoading = true;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`/api/chat/history/${this.roomId}`, {
+           headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+        
+        this.messages = res.data.map(m => ({
+            id: m.id,
+            senderId: m.sender_id,
+            text: m.content,
+            time: new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }));
+        
+        this.$nextTick(this.scrollToBottom);
+      } catch (error) {
+        console.error("채팅 내역 로드 실패:", error);
+      } finally {
+        this.isLoading = false;
+      }
     },
-    nowTime() {
-      const d = new Date()
-      const hh = String(d.getHours()).padStart(2, '0')
-      const mm = String(d.getMinutes()).padStart(2, '0')
-      return `${hh}:${mm}`
+    connectWebSocket() {
+        if(!this.myId) return;
+        const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/api/chat/ws/${this.roomId}/${this.myId}`;
+        
+        this.socket = new WebSocket(wsUrl);
+
+        this.socket.onopen = () => {
+            console.log("웹소켓 연결 성공");
+        };
+
+        this.socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.messages.push({
+                senderId: data.sender_id,
+                text: data.content,
+                time: new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            this.$nextTick(this.scrollToBottom);
+        };
+
+        this.socket.onclose = () => {
+            console.log("웹소켓 연결 종료");
+        };
     },
     sendMessage(text) {
-      const nextId = this.messages.length
-        ? this.messages[this.messages.length - 1].id + 1
-        : 1
-
-      this.messages.push({
-        id: nextId,
-        senderId: this.myId,
-        text,
-        time: this.nowTime()
-      })
-
-      this.saveMessages()
-      this.$nextTick(this.scrollToBottom)
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        const msg = { content: text }; 
+        this.socket.send(JSON.stringify(msg));
+    
+      } else {
+        alert("연결이 끊어졌습니다. 새로고침 해주세요.");
+      }
     },
     scrollToBottom() {
       const el = this.$refs.chatBody
@@ -122,7 +134,6 @@ export default {
   }
 }
 </script>
-
 <style scoped>
 .chat-page {
   background: #f8f9fa;

@@ -7,40 +7,40 @@
         
         <section class="request-section">
           <div class="section-header-row">
-            <h2>📋 들어온 돌봄 요청</h2>
+            <h2>📋 들어온 돌봄 요청 (대기중)</h2>
             <button class="view-history-link" @click="$router.push('/teacher/history')">
               전체보기 >
             </button>
           </div>
           
-          <div v-if="requests.length === 0" class="empty-state">
-             <p>아직 들어온 요청이 없습니다.</p>
+          <div v-if="isLoading" class="loading-state">
+             <p>요청 내역을 불러오는 중입니다...</p>
+          </div>
+          <div v-else-if="requests.length === 0" class="empty-state">
+             <p>현재 대기 중인 요청이 없습니다.</p>
           </div>
           
-          <div class="card-list">
+          <div v-else class="card-list">
             <div 
               v-for="req in requests" 
-              :key="req.id" 
+              :key="req.match_id" 
               class="request-card"
-              @click="goToDetail(req.id)"
+              @click="goToDetail(req.match_id)"
             >
               <div class="card-header">
                 <span class="badge new">NEW</span>
-                <span class="date">{{ formatDate(req.created_at) }}</span>
+                <span class="date">{{ req.date_time }}</span>
               </div>
               <div class="card-body">
-                <h3>{{ req.parent_name }} 학부모님</h3>
+                <h3>{{ req.parent_name }}</h3>
                 <div class="info-row">
                   <span class="icon">📍</span>
-                  <span>{{ req.location }}</span>
+                  <span>{{ req.location || '주소 정보 없음' }}</span>
                 </div>
+                
                 <div class="info-row">
-                  <span class="icon">⏰</span>
-                  <span>{{ formatTime(req.start_time) }} ({{ req.duration }}시간)</span>
-                </div>
-                <div class="info-row highlight">
-                  <span class="icon">💰</span>
-                  <span>{{ formatPay(req.hourly_pay) }}원</span>
+                  <span class="icon">🔖</span>
+                  <span>{{ req.display_status }}</span>
                 </div>
               </div>
               <button class="detail-btn">확인하기</button>
@@ -96,17 +96,16 @@ export default {
         registered: false,
         verified: false
       },
-      requests: [] 
+      requests: [],
+      isLoading: false
     };
   },
   computed: {
-    // 버튼 스타일 (인증 상태에 따라 색상 변경)
     certBtnClass() {
       if (this.certStatus.verified) return 'verified'; 
       if (this.certStatus.registered) return 'pending';
       return 'primary';
     },
-    // 버튼 텍스트
     certBtnText() {
       if (this.certStatus.verified) return '✅ 자격 인증 완료';
       if (this.certStatus.registered) return '⏳ 심사 대기 중';
@@ -123,7 +122,7 @@ export default {
     }
 
     this.fetchCertStatus(token);
-    this.fetchRequests();
+    this.fetchRequests(token);
   },
   methods: {
     async fetchCertStatus(token) {
@@ -137,6 +136,25 @@ export default {
         console.warn("증명서 상태 확인 실패:", error);
       }
     },
+
+    async fetchRequests(token) {
+      this.isLoading = true;
+      try {
+
+        const res = await axios.get('/api/match/sitter/list', {
+          params: { filter_status: 'pending' },
+          headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+
+        this.requests = res.data;
+        
+      } catch (error) {
+        console.error("요청 리스트 로드 실패:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
     handleCertClick() {
       if (this.certStatus.verified) {
         alert("이미 자격 인증이 완료되었습니다. 활동이 가능합니다! 🎉");
@@ -146,6 +164,7 @@ export default {
         this.$router.push('/onboarding');
       }
     },
+
     logout() {
       if(confirm('로그아웃 하시겠습니까?')) {
         localStorage.removeItem('token');
@@ -153,47 +172,13 @@ export default {
         this.$router.push('/login');
       }
     },
-    fetchRequests() {
-      // 실제 API 연동 시 axios 호출로 변경
-      this.requests = [
-        {
-          id: 1,
-          parent_name: '이영희',
-          location: '서울 강남구 역삼동',
-          start_time: '14:00:00',
-          duration: 3,
-          hourly_pay: 15000,
-          created_at: '2025-12-20T09:00:00'
-        },
-        {
-          id: 2,
-          parent_name: '박철수',
-          location: '서울 서초구 반포동',
-          start_time: '10:00:00',
-          duration: 4,
-          hourly_pay: 18000,
-          created_at: '2025-12-21T11:00:00'
-        }
-      ];
-    },
-    formatDate(dateStr) {
-      if (!dateStr) return '';
-      const date = new Date(dateStr);
-      return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-    },
-    formatTime(timeStr) {
-      return timeStr ? timeStr.substring(0, 5) : '';
-    },
-    formatPay(pay) {
-      return pay ? pay.toLocaleString() : '0';
-    },
+    
     goToDetail(id) {
       this.$router.push(`/teacher/request/${id}`);
     }
   }
 };
 </script>
-
 <style scoped>
 /* 페이지 기본 배경 */
 .page-container { background-color: #f8f9fa; min-height: 100vh; }

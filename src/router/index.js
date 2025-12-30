@@ -7,8 +7,6 @@ import HomeView from '../views/HomeView.vue';
 import SearchView from '../views/SearchView.vue';
 import TeacherProfileView from '../views/TeacherProfileView.vue';
 import MyCareHistoryView from '../views/MyCareHistoryView.vue';
-import ReCareApplyView from '../views/ReCareApplyView.vue';
-import ProCareApplyView from '../views/ProCareApplyView.vue';
 import ForgetPassView from '../views/ForgetPassView.vue';
 import ResetPassView from '../views/ResetPassView.vue';
 import CustomerServiceView from '../views/CustomerServiceView.vue';
@@ -33,22 +31,17 @@ const routes = [
   { path: '/signup', name: 'SignUp', component: SignUpView },
   { path: '/onboarding', name: 'Onboarding', component: OnboardingView },
 
-  // 학부모 홈
+  // 학부모 
   { path: '/home', name: 'Home', component: HomeView },
-
-  // 선생님 프로필 (학부모가 보는 화면)
   { path: '/teacher/:id', name: 'TeacherProfile', component: TeacherProfileView },
-
   { path: '/search', name: 'Search', component: SearchView },
-
-  // 학부모 내역
   { path: '/history', name: 'MyCareHistory', component: MyCareHistoryView },
 
-  { path: '/procareapply', name: 'ProCareApplyView', component: ProCareApplyView },
-  { path: '/recareapply', name: 'ReCareApplyView', component: ReCareApplyView },
-
+  //비밀번호 분실 > 초기화
   { path: '/forgot-password', name: 'ForgetPassView', component: ForgetPassView },
   { path: '/reset-password', name: 'ResetPassView', component: ResetPassView },
+  
+  //고객센터
   { path: '/customer-service', name: 'customer-service', component: CustomerServiceView },
   { path: '/terms', name: 'terms', component: TermsView },
 
@@ -56,16 +49,16 @@ const routes = [
   { path: '/profile/edit/parent', name: 'ParentProfileEdit', component: ParentProfileEdit },
   { path: '/profile/edit/teacher', name: 'TeacherProfileEdit', component: TeacherProfileEdit },
 
-  // 선생님 전용
+  // 선생님 
   { path: '/teacher-home', name: 'TeacherHome', component: TeacherHomeView },
   { path: '/teacher/request/:id', name: 'TeacherRequestDetail', component: TeacherRequestDetailView },
   { path: '/teacher/history', name: 'TeacherHistory', component: TeacherHistoryView },
 
   // 채팅
-  { path: '/chats', name: 'ChatList', component: ChatListView }, // 채팅 목록
-  { path: '/chat/:roomId', name: 'Chat', component: ChatView },  // 1:1 채팅방
+  { path: '/chats', name: 'ChatList', component: ChatListView }, 
+  { path: '/chat/:roomId', name: 'Chat', component: ChatView },  
 
-  // 404
+  // 오류 
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
 ];
 
@@ -88,13 +81,11 @@ router.beforeEach((to, from, next) => {
   ];
   const authRequired = !publicPages.includes(to.path);
 
-  // 로그인 안 했는데 보호 페이지 접근
   if (authRequired && !isLoggedIn) {
     next('/login');
     return;
   }
 
-  // 로그인 상태에서 로그인/회원가입 접근 시
   if (isLoggedIn && (to.path === '/login' || to.path === '/signup')) {
     if (role === 'sitter') {
       next('/teacher-home');

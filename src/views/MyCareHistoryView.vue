@@ -4,24 +4,22 @@
     <main class="history-container">
       <h1>나의 돌봄 내역 (학부모용)</h1>
 
-      <div v-if="isLoading" class="loading-msg">내역을 불러오는 중...</div>
-      <div v-else-if="careHistory.length === 0" class="empty-msg">아직 돌봄 내역이 없습니다.</div>
-
-      <div v-else v-for="item in careHistory" :key="item.match_id" class="care-item">
+      <div v-for="item in careHistory" :key="item.id" class="care-item">
         <div class="item-header">
-          <span class="teacher-name">{{ item.sitter_name }} 선생님과의 돌봄</span>
-          <span :class="['status', getStatusClass(item.status)]">{{ formatStatus(item.status) }}</span>
+          <span class="teacher-name">{{ item.teacherName }} 선생님과의 돌봄</span>
+          <span :class="['status', item.status]">{{ item.statusText }}</span>
         </div>
 
-        <p class="item-period">{{ formatDate(item.created_at) }} 신청</p>
+        <p class="item-period">{{ item.period }}</p>
 
+        <!-- 후기 작성/수정 영역 -->
         <div
-          v-if="reviewForm.visible && reviewForm.targetId === item.match_id"
+          v-if="reviewForm.visible && reviewForm.targetId === item.id"
           class="review-form-wrapper"
         >
           <hr />
           <div class="review-form">
-            <h4>{{ item.has_review ? '후기 수정하기' : '새 후기 작성' }}</h4>
+            <h4>{{ item.hasReview ? '후기 수정하기' : '새 후기 작성' }}</h4>
 
             <div class="detailed-ratings">
               <div
@@ -54,8 +52,8 @@
               <BaseButton type="outline" @click="closeReviewForm">
                 닫기
               </BaseButton>
-              <BaseButton type="primary" @click="submitReview()">
-                {{ item.has_review ? '수정 완료' : '후기 등록' }}
+              <BaseButton type="primary" @click="submitReview(item)">
+                {{ item.hasReview ? '수정 완료' : '후기 등록' }}
               </BaseButton>
             </div>
           </div>
@@ -67,6 +65,7 @@
           </button>
 
           <div class="right-actions">
+            <!-- 채팅 버튼 -->
             <button class="btn-chat" @click="openChat(item)">
               💬 채팅하기
             </button>
@@ -76,7 +75,7 @@
             </span>
 
             <button
-              v-else-if="(item.status === 'completed' || item.status === '종료됨') && item.has_review"
+              v-else-if="item.status === 'completed' && item.hasReview"
               class="btn-text-action"
               @click="openReviewForm(item)"
             >
@@ -84,24 +83,25 @@
             </button>
 
             <BaseButton
-              v-else-if="(item.status === 'completed' || item.status === '종료됨') && !item.has_review"
+              v-else-if="item.status === 'completed' && !item.hasReview"
               type="secondary"
               @click="openReviewForm(item)"
             >
               후기 등록
             </BaseButton>
 
-            <span v-else-if="item.status === 'accepted' || item.status === '진행중'" class="ing-msg">
+            <span v-else-if="item.status === 'in-progress'" class="ing-msg">
               현재 돌봄 진행 중
             </span>
 
             <span v-else-if="item.status === 'rejected'" class="rej-msg">
-               선생님이 거절했습니다
+              ❌ 선생님이 거절했습니다
             </span>
           </div>
         </div>
       </div>
 
+      <!-- 신고 모달 -->
       <ReportModal
         :isVisible="reportModal.visible"
         :targetName="reportModal.targetName"
@@ -109,6 +109,7 @@
         @close="closeReportModal"
       />
 
+      <!-- 거절 알림 모달 -->
       <GlobalModal
         :visible="rejectModal.visible"
         :message="rejectModal.message"
@@ -120,7 +121,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import BaseButton from '../components/BaseButton.vue'
 import TheHeader from '../components/TheHeader.vue'
 import ReportModal from '@/components/ReportModal.vue'
@@ -131,8 +131,44 @@ export default {
 
   data() {
     return {
-      isLoading: false,
-      careHistory: [], 
+      careHistory: [
+        {
+          id: 1,
+          teacherName: '김선생님',
+          status: 'pending',
+          statusText: '승인 대기',
+          period: '2025.10.15 (예정)',
+          hasReview: false,
+          savedReview: null
+        },
+        {
+          id: 2,
+          teacherName: '박선생님',
+          status: 'in-progress',
+          statusText: '진행중',
+          period: '2025.10.01 ~ 현재',
+          hasReview: false,
+          savedReview: null
+        },
+        {
+          id: 3,
+          teacherName: '이선생님',
+          status: 'completed',
+          statusText: '종료됨',
+          period: '2025.09.15 ~ 2025.09.30',
+          hasReview: true,
+          savedReview: {
+            ratings: {
+              punctuality: 5,
+              preparation: 4,
+              rapport: 5,
+              safety: 5,
+              communication: 4
+            },
+            text: '아이랑 너무 잘 놀아주셨어요!'
+          }
+        }
+      ],
 
       reportModal: {
         visible: false,
@@ -142,24 +178,23 @@ export default {
 
       reviewForm: {
         visible: false,
-        targetId: null,       
-        targetSitterId: null, 
+        targetId: null,
         ratings: {
-          time_punctuality: 5,
-          preparedness_activity: 5,
-          communication_with_child: 5,
-          safety_management: 5,
-          communication_skill: 5
+          punctuality: 0,
+          preparation: 0,
+          rapport: 0,
+          safety: 0,
+          communication: 0
         },
         text: ''
       },
 
       ratingCategories: [
-        { key: 'time_punctuality', label: '시간 약속:' },
-        { key: 'preparedness_activity', label: '준비성:' },
-        { key: 'communication_with_child', label: '교감 능력:' },
-        { key: 'safety_management', label: '안전 관리:' },
-        { key: 'communication_skill', label: '소통 능력:' }
+        { key: 'punctuality', label: '시간 약속:' },
+        { key: 'preparation', label: '준비성:' },
+        { key: 'rapport', label: '교감 능력:' },
+        { key: 'safety', label: '안전 관리:' },
+        { key: 'communication', label: '소통 능력:' }
       ],
 
       rejectModal: {
@@ -171,127 +206,83 @@ export default {
   },
 
   mounted() {
-    this.fetchHistory();
+    this.checkRejectedAndPopup()
   },
 
   methods: {
-    async fetchHistory() {
-      this.isLoading = true;
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('/api/match/parent/list', {
-          headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
-        });
-        this.careHistory = res.data;
-      } catch (error) {
-        console.error("내역 로드 실패:", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    formatStatus(status) {
-      const map = { 'pending': '승인 대기', 'accepted': '진행중', 'rejected': '거절됨', 'completed': '종료됨' };
-      return map[status] || status;
-    },
-    getStatusClass(status) {
-      return status; 
-    },
-    formatDate(dateStr) {
-      return dateStr ? dateStr.split('T')[0] : '';
-    },
-
     /* ---------- 채팅 ---------- */
     openChat(item) {
-      this.$router.push(`/chat/${item.match_id}`);
+      const parentId = sessionStorage.getItem('userId') || 'parent'
+      const sitterId = `sitter_${item.id}`
+      const roomId = `${parentId}_${sitterId}`
+
+      const key = `chatRoom:${roomId}`
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            otherId: sitterId,
+            otherName: item.teacherName
+          })
+        )
+      }
+
+      this.$router.push(`/chat/${roomId}`)
     },
 
     /* ---------- 신고 ---------- */
     openReportModal(item) {
-      this.reportModal.visible = true;
-      this.reportModal.targetName = item.sitter_name; 
-      this.reportModal.targetId = item.match_id;     
+      this.reportModal.visible = true
+      this.reportModal.targetName = item.teacherName
+      this.reportModal.targetId = item.id
     },
     closeReportModal() {
-      this.reportModal.visible = false;
+      this.reportModal.visible = false
     },
 
     /* ---------- 후기 ---------- */
     openReviewForm(item) {
-      if (this.reviewForm.targetId === item.match_id && this.reviewForm.visible) {
-        this.closeReviewForm();
-        return;
-      }
+      this.reviewForm.visible = true
+      this.reviewForm.targetId = item.id
 
-      this.reviewForm.visible = true;
-      this.reviewForm.targetId = item.match_id;
-      this.reviewForm.targetSitterId = item.sitter_id;
-
-      // 이미 작성된 후기가 있다면 채워넣기 (API 응답 구조에 따라 조정 필요)
-      if (item.has_review && item.saved_review) {
-        this.reviewForm.ratings = { ...item.saved_review.ratings };
-        this.reviewForm.text = item.saved_review.comment;
+      if (item.hasReview && item.savedReview) {
+        this.reviewForm.ratings = { ...item.savedReview.ratings }
+        this.reviewForm.text = item.savedReview.text
       } else {
         this.reviewForm.ratings = {
-          time_punctuality: 5,
-          preparedness_activity: 5,
-          communication_with_child: 5,
-          safety_management: 5,
-          communication_skill: 5
-        };
-        this.reviewForm.text = '';
+          punctuality: 5,
+          preparation: 5,
+          rapport: 5,
+          safety: 5,
+          communication: 5
+        }
+        this.reviewForm.text = ''
       }
     },
-
     closeReviewForm() {
-      this.reviewForm.visible = false;
-      this.reviewForm.targetId = null;
+      this.reviewForm.visible = false
+      this.reviewForm.targetId = null
     },
-
     setDetailedRating(key, value) {
-      this.reviewForm.ratings[key] = value;
+      this.reviewForm.ratings[key] = value
+    },
+    submitReview(item) {
+      alert('후기가 저장되었습니다.')
+      item.hasReview = true
+      item.savedReview = {
+        ratings: { ...this.reviewForm.ratings },
+        text: this.reviewForm.text
+      }
+      this.closeReviewForm()
     },
 
-    async submitReview() {
-      if (!this.reviewForm.text.trim()) {
-        alert("후기 내용을 입력해주세요.");
-        return;
-      }
-
-      try {
-        const token = localStorage.getItem('token');
-        const payload = {
-          match_id: this.reviewForm.targetId,       
-          sitter_id: this.reviewForm.targetSitterId, 
-          time_punctuality: this.reviewForm.ratings.time_punctuality,
-          preparedness_activity: this.reviewForm.ratings.preparedness_activity,
-          communication_with_child: this.reviewForm.ratings.communication_with_child,
-          safety_management: this.reviewForm.ratings.safety_management,
-          communication_skill: this.reviewForm.ratings.communication_skill,
-          comment: this.reviewForm.text
-        };
-
-        await axios.post('/api/review/', payload, {
-          headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
-        });
-
-        alert('후기가 성공적으로 등록되었습니다!');
-        
-        await this.fetchHistory(); 
-        this.closeReviewForm();    
-
-      } catch (error) {
-        console.error(error);
-        alert('후기 등록 실패: ' + (error.response?.data?.detail || '오류가 발생했습니다.'));
-      }
-    },
-
-    /* ---------- 거절 팝업 (필요 시 구현) ---------- */
+    /* ---------- 거절 팝업 ---------- */
+    checkRejectedAndPopup() {},
     closeRejectModal() {
-      this.rejectModal.visible = false;
+      this.rejectModal.visible = false
     },
     confirmRejectModal() {
-      this.closeRejectModal();
+      this.closeRejectModal()
     }
   }
 }

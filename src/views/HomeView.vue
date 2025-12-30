@@ -16,29 +16,25 @@
           <div class="recommend-section">
             <div class="section-header-row">
               <h2>
-                {{ isLoggedIn ? userName + '님을 위한 맞춤 선생님 ✨' : '맞춤 돌봄 선생님을 추천해드려요 ' }}
+                {{ isLoggedIn ? userName + '님을 위한 맞춤 선생님 ✨' : '맞춤 돌봄 선생님을 추천해드려요 ✨' }}
               </h2>
             </div>
             
-            <div v-if="isLoading" class="loading-msg">
-               선생님 목록을 불러오는 중...
-            </div>
-
-            <div v-else class="recommendation-grid">
+            <div class="recommendation-grid">
               <div 
                 v-for="teacher in recommendedTeachers" 
                 :key="teacher.id" 
                 class="teacher-card" 
-                @click="$router.push('/teacher/'+teacher.user_id)"
+                @click="$router.push('/teacher/'+teacher.id)"
               >
                 <div class="teacher-photo">
-                  <div class="placeholder-img">👩‍🏫</div>
+                  <div class="placeholder-img"></div>
                 </div>
                 <div class="teacher-info">
                   <p class="name">{{ teacher.name }}</p>
-                  <p class="location">📍 {{ teacher.location || teacher.regions || '지역 정보 없음' }}</p>
-                  <p class="tags">{{ teacher.activities || teacher.tags }}</p>
-                  <p class="wage">{{ formatPay(teacher.hourly_pay || teacher.wage) }}원/시</p>
+                  <p class="location">📍 {{ teacher.location }}</p>
+                  <p class="tags">{{ teacher.tags }}</p>
+                  <p class="wage">{{ teacher.wage.toLocaleString() }}원/시</p>
                 </div>
               </div>
             </div>
@@ -73,17 +69,25 @@
 
 <script>
 import axios from 'axios';
-import BaseButton from '@/components/BaseButton.vue' 
-import TheHeader from '@/components/TheHeader.vue'
+import BaseButton from '../components/BaseButton.vue'
+import TheHeader from '../components/TheHeader.vue'
 
 export default {
   components: { BaseButton, TheHeader },
   data() {
     return {
       isLoggedIn: false,
-      isLoading: false, 
       userName: sessionStorage.getItem('userName') || '학부모',
-      recommendedTeachers: []
+      
+      // 추천 선생님 데이터 (더미)
+      recommendedTeachers: [
+        { id: 1, name: '김선생님', location: '서울 강남구', wage: 15000, tags: '#실내놀이 #영어' },
+        { id: 2, name: '이선생님', location: '서울 서초구', wage: 14000, tags: '#등하원 #책읽기' },
+        { id: 3, name: '박선생님', location: '경기 성남시', wage: 13000, tags: '#학습지도 #한글' },
+        { id: 4, name: '최선생님', location: '서울 송파구', wage: 16000, tags: '#체육 #야외활동' },
+        { id: 5, name: '정선생님', location: '서울 마포구', wage: 15000, tags: '#미술 #만들기' },
+        { id: 6, name: '강선생님', location: '서울 강동구', wage: 13500, tags: '#돌봄 #간식' }
+      ]
     }
   },
   async mounted() {
@@ -92,6 +96,7 @@ export default {
     if (token) {
       this.isLoggedIn = true;
       try {
+        // 유저 이름 가져오기
         const userRes = await axios.get('/api/user/me', {
            headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
         });
@@ -100,37 +105,20 @@ export default {
           sessionStorage.setItem('userName', this.userName);
         }
       } catch (e) {
-        console.warn("내 정보 로드 실패 (토큰 만료 가능성)");
+        console.warn("내 정보 로드 실패, 기본값 사용");
       }
+    } else {
+      this.isLoggedIn = false;
     }
-    await this.fetchRecommendedTeachers();
   },
   methods: {
-    async fetchRecommendedTeachers() {
-      this.isLoading = true; 
-      try {
-        const res = await axios.get('/api/search', {
-           params: { sort_by: 'hourly_pay' }, 
-           headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
-        this.recommendedTeachers = res.data; 
-      } catch (error) {
-        console.error("선생님 목록 로드 실패:", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    formatPay(pay) {
-      if (!pay) return '0';
-      return Number(pay).toLocaleString();
-    },
     logout() {
-      if(confirm('로그아웃 하시겠습니까?')) {
-        localStorage.removeItem('token');
-        sessionStorage.clear();
-        this.isLoggedIn = false;
-        this.$router.push('/login');
-      }
+        if(confirm('로그아웃 하시겠습니까?')) {
+          localStorage.removeItem('token');
+          sessionStorage.clear();
+          this.isLoggedIn = false;
+          this.$router.push('/login');
+        }
     }
   }
 }

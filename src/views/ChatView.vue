@@ -77,7 +77,7 @@ export default {
       this.isLoading = true;
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`/api/chat/history/${this.roomId}`, {
+        const res = await axios.get(`/chat/history/${this.roomId}`, {
            headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
         });
         

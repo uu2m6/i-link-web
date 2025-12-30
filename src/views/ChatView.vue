@@ -41,12 +41,11 @@ export default {
     }
   },
   async mounted() {
-    this.roomId = this.$route.params.roomId // match_id
+    this.roomId = this.$route.params.roomId
     
-    // 내 정보(ID) 가져오기
     await this.fetchMyInfo();
 
-    // ID가 있으면 채팅 시작
+
     if (this.myId) {
       this.fetchHistory();
       this.connectWebSocket();
@@ -97,43 +96,43 @@ export default {
         this.isLoading = false;
       }
     },
-    
-  connectWebSocket() {
-        if(!this.myId) return;
+connectWebSocket() {
+      if(!this.myId) return;
 
+      const token = localStorage.getItem('token'); 
 
-        const backendUrl = "191a70116f30.ngrok-free.app"; 
+      const backendUrl = "191a70116f30.ngrok-free.app"; 
+      const protocol = backendUrl.includes("ngrok") || backendUrl.includes("vercel") ? "wss:" : "ws:";
+      
 
-        const protocol = backendUrl.includes("ngrok") || backendUrl.includes("vercel") ? "wss:" : "ws:";
-        
-        const wsUrl = `${protocol}//${backendUrl}/chat/ws/${this.roomId}/${this.myId}`;
-        
-        console.log("WebSocket 연결 시도:", wsUrl);
+      const wsUrl = `${protocol}//${backendUrl}/chat/ws/${this.roomId}/${this.myId}?token=${token}`;
+      
+      console.log("WebSocket 연결 시도:", wsUrl);
 
-        this.socket = new WebSocket(wsUrl);
+      this.socket = new WebSocket(wsUrl);
 
-        this.socket.onopen = () => {
-            console.log("웹소켓 연결 성공!");
-        };
+      this.socket.onopen = () => {
+          console.log("웹소켓 연결 성공!");
+      };
 
-        this.socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            this.messages.push({
-                senderId: data.sender_id,
-                text: data.content,
-                time: new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            this.$nextTick(this.scrollToBottom);
-        };
+      this.socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          this.messages.push({
+              senderId: data.sender_id,
+              text: data.content,
+              time: new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          });
+          this.$nextTick(this.scrollToBottom);
+      };
 
-        this.socket.onclose = () => {
-            console.log("웹소켓 연결 종료");
-        };
-        
-        this.socket.onerror = (error) => {
-            console.error("웹소켓 에러 발생 (주소를 확인하세요):", error);
-        };
-    },
+      this.socket.onclose = () => {
+          console.log("웹소켓 연결 종료");
+      };
+      
+      this.socket.onerror = (error) => {
+          console.error("웹소켓 에러 발생:", error);
+      };
+  },
     sendMessage(text) {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         const msg = { content: text }; 

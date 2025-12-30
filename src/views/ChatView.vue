@@ -101,7 +101,7 @@ connectWebSocket() {
 
       const token = localStorage.getItem('token'); 
 
-      const backendUrl = "191a70116f30.ngrok-free.app"; 
+      const backendUrl = "9122601ea1e8.ngrok-free.app"; 
       const protocol = backendUrl.includes("ngrok") || backendUrl.includes("vercel") ? "wss:" : "ws:";
       
 

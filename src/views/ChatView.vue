@@ -102,7 +102,7 @@ export default {
         if(!this.myId) return;
 
 
-        const backendUrl = "0131ec3dc688.ngrok-free.app"; 
+        const backendUrl = "191a70116f30.ngrok-free.app"; 
 
         const protocol = backendUrl.includes("ngrok") || backendUrl.includes("vercel") ? "wss:" : "ws:";
         

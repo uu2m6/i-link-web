@@ -81,13 +81,18 @@ export default {
            headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
         });
         
+        console.log("서버가 보낸 히스토리 데이터:", res.data);
+        const historyList = Array.isArray(res.data) ? res.data : [];
+        if (!Array.isArray(res.data)) {
+        console.warn("주의: 서버 응답이 리스트가 아닙니다! (HTML이나 에러 메시지일 수 있음)");
+        
   
-        this.messages = res.data.map(m => ({
-            id: m.id,
-            senderId: m.sender_id,
-            text: m.content,
-            time: new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-        }));
+        this.messages = historyList.map(m => ({ 
+          id: m.id,
+          senderId: m.sender_id,
+          text: m.content,
+          time: m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''
+}))}
         
         this.$nextTick(this.scrollToBottom);
       } catch (error) {

@@ -5,6 +5,7 @@
     <div v-if="isLoading" class="loading-screen">선생님 정보 불러오는 중...</div>
 
     <main v-else class="profile-container">
+      
       <section class="profile-header-card">
         <div class="profile-image-wrapper">
           <div class="profile-placeholder">👩‍🏫</div>
@@ -45,14 +46,16 @@
         <h3>선생님 소개</h3>
         <p class="intro-text">{{ teacher.introduction }}</p>
       </section>
+
+      <ReviewStats 
+        :stats="reviewStats" 
+        :rematchProbability="rematchProbability"
+      />
+
     </main>
 
     <div class="bottom-action-bar" v-if="!isLoading">
-      <BaseButton type="secondary" class="chat-btn" @click="startChat">
-        💬 문의하기
-      </BaseButton>
-
-      <BaseButton type="primary" class="match-btn" @click="requestMatching">
+      <BaseButton type="primary" class="match-btn full-width" @click="requestMatching">
         매칭 신청하기
       </BaseButton>
     </div>
@@ -63,9 +66,10 @@
 import axios from 'axios'
 import BaseButton from '@/components/BaseButton.vue'
 import TheHeader from '@/components/TheHeader.vue'
+import ReviewStats from '@/components/ReviewStats.vue' 
 
 export default {
-  components: { BaseButton, TheHeader },
+  components: { BaseButton, TheHeader, ReviewStats }, 
   data() {
     return {
       isLoading: true,
@@ -81,7 +85,15 @@ export default {
         availableDays: '',
         cctv: false,
         introduction: ''
-      }
+      },
+      reviewStats: {
+        avg_time_punctuality: 0,
+        avg_preparedness_activity: 0,
+        avg_communication_with_child: 0,
+        avg_safety_management: 0,
+        avg_communication_skill: 0
+      },
+      rematchProbability: null
     }
   },
   mounted() {
@@ -91,11 +103,17 @@ export default {
   methods: {
     async fetchTeacherProfile(id) {
         try {
-
             const res = await axios.get(`/api/search/sitter/${id}`, {
                  headers: { 'ngrok-skip-browser-warning': 'true' }
             });
+            
             this.teacher = res.data;
+            
+            if (res.data.reviewStats) {
+                this.reviewStats = res.data.reviewStats;
+            }
+            this.rematchProbability = res.data.rematchProbability;
+
         } catch (error) {
             console.error("프로필 로드 실패:", error);
             alert("선생님 정보를 불러올 수 없습니다.");
@@ -129,22 +147,22 @@ export default {
             headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
         });
 
-        alert('매칭 신청이 완료되었습니다. 선생님의 수락을 기다려주세요!');
+  
+        alert('매칭 신청이 완료되었습니다!\n선생님이 수락하면 채팅방이 생성됩니다.');
         this.$router.push('/history');
 
       } catch (error) {
          console.error(error);
          alert(error.response?.data?.detail || "매칭 신청 중 오류가 발생했습니다.");
       }
-    },
-
-    startChat() {
-      alert("매칭이 성사된 후 채팅이 가능합니다. 먼저 매칭 신청을 해주세요!");
     }
+
   }
 }
 </script>
+
 <style scoped>
+/* 기존 스타일 유지 */
 .loading-screen { text-align: center; padding: 50px; font-weight: bold; color: #888; }
 .profile-page { background: #f8f9fa; min-height: 100vh; padding-bottom: 80px; }
 .profile-container { max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -170,6 +188,10 @@ export default {
 .intro-text { line-height: 1.6; color: #444; white-space: pre-line; }
 
 .bottom-action-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; display: flex; justify-content: center; gap: 10px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 100; }
-.chat-btn { width: auto !important; margin-top: 0 !important; background-color: #6c757d !important; border: none; } 
-.match-btn { width: auto !important; margin-top: 0 !important; flex: 1; max-width: 400px; }
+
+.match-btn.full-width { width: 100% !important; margin-top: 0 !important; max-width: 600px; }
+
+@media (max-width: 600px) {
+  .info-grid { grid-template-columns: 1fr; }
+}
 </style>

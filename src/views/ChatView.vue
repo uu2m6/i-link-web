@@ -106,7 +106,7 @@ export default {
 
         const protocol = backendUrl.includes("ngrok") || backendUrl.includes("vercel") ? "wss:" : "ws:";
         
-        const wsUrl = `${protocol}//${backendUrl}/api/chat/ws/${this.roomId}/${this.myId}`;
+        const wsUrl = `${protocol}//${backendUrl}/chat/ws/${this.roomId}/${this.myId}`;
         
         console.log("WebSocket 연결 시도:", wsUrl);
 

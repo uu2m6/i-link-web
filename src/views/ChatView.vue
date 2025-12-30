@@ -41,10 +41,12 @@ export default {
     }
   },
   async mounted() {
-    this.roomId = this.$route.params.roomId 
+    this.roomId = this.$route.params.roomId // match_id
+    
+    // 내 정보(ID) 가져오기
+    await this.fetchMyInfo();
 
-    await this.fetchMyInfo(); 
-
+    // ID가 있으면 채팅 시작
     if (this.myId) {
       this.fetchHistory();
       this.connectWebSocket();
@@ -53,23 +55,24 @@ export default {
       this.$router.push('/login');
     }
   },
-
+  beforeUnmount() {
+    if (this.socket) {
+      this.socket.close();
+    }
+  },
   methods: {
     async fetchMyInfo() {
-      try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) throw new Error("토큰 없음");
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error("토큰 없음");
 
-        const res = await axios.get('/api/user/me', {
-          headers: { 
-            'Authorization': `Bearer ${token}`, 
-            'ngrok-skip-browser-warning': 'true' 
-          }
-        });
-        this.myId = res.data.id; 
-      } catch (e) {
-        console.error("내 정보 로드 실패", e);
-      }
+            const res = await axios.get('/api/user/me', {
+                headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+            });
+            this.myId = res.data.id;
+        } catch(e) {
+            console.error("내 정보 로드 실패", e);
+        }
     },
     async fetchHistory() {
       this.isLoading = true;
@@ -79,6 +82,7 @@ export default {
            headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
         });
         
+  
         this.messages = res.data.map(m => ({
             id: m.id,
             senderId: m.sender_id,
@@ -93,15 +97,23 @@ export default {
         this.isLoading = false;
       }
     },
-    connectWebSocket() {
+    
+  connectWebSocket() {
         if(!this.myId) return;
-        const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/api/chat/ws/${this.roomId}/${this.myId}`;
+
+
+        const backendUrl = "https://0131ec3dc688.ngrok-free.app"; 
+
+        const protocol = backendUrl.includes("ngrok") || backendUrl.includes("vercel") ? "wss:" : "ws:";
         
+        const wsUrl = `${protocol}//${backendUrl}/api/chat/ws/${this.roomId}/${this.myId}`;
+        
+        console.log("WebSocket 연결 시도:", wsUrl);
+
         this.socket = new WebSocket(wsUrl);
 
         this.socket.onopen = () => {
-            console.log("웹소켓 연결 성공");
+            console.log("웹소켓 연결 성공!");
         };
 
         this.socket.onmessage = (event) => {
@@ -117,14 +129,17 @@ export default {
         this.socket.onclose = () => {
             console.log("웹소켓 연결 종료");
         };
+        
+        this.socket.onerror = (error) => {
+            console.error("웹소켓 에러 발생 (주소를 확인하세요):", error);
+        };
     },
     sendMessage(text) {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         const msg = { content: text }; 
         this.socket.send(JSON.stringify(msg));
-    
       } else {
-        alert("연결이 끊어졌습니다. 새로고침 해주세요.");
+        alert("연결이 끊어졌습니다. 페이지를 새로고침 해주세요.");
       }
     },
     scrollToBottom() {

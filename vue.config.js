@@ -6,7 +6,7 @@ module.exports = defineConfig({
   devServer: {
     proxy: {
       '/api': { 
-        target: 'https://61fec8628f7c.ngrok-free.app', //작은 따옴표 안에 API링크 삽입
+        target: 'https://7c8e3485e676.ngrok-free.app', //작은 따옴표 안에 API링크 삽입
         changeOrigin: true,
       }
     }

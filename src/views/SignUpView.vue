@@ -460,9 +460,9 @@ export default {
             });
 
             if (response.data.match) {
-              this.locationStatus = { success: true, message: '✅ 인증 성공: 현재 위치와 활동 지역이 일치합니다.' };
+              this.locationStatus = { success: true, message: ' 인증 성공: 현재 위치와 활동 지역이 일치합니다.' };
             } else {
-              this.locationStatus = { success: false, message: `❌ 인증 실패: 실제 위치(${actualAddress})가 다릅니다.` };
+              this.locationStatus = { success: false, message: ` 인증 실패: 실제 위치(${actualAddress})가 다릅니다.` };
             }
 
           } catch (error) {

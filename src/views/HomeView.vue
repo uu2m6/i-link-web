@@ -20,21 +20,25 @@
               </h2>
             </div>
             
-            <div class="recommendation-grid">
+            <div v-if="isLoading" class="loading-msg">
+               선생님 목록을 불러오는 중...
+            </div>
+
+            <div v-else class="recommendation-grid">
               <div 
                 v-for="teacher in recommendedTeachers" 
                 :key="teacher.id" 
                 class="teacher-card" 
-                @click="$router.push('/teacher/'+teacher.id)"
+                @click="$router.push('/teacher/'+teacher.user_id)"
               >
                 <div class="teacher-photo">
-                  <div class="placeholder-img"></div>
+                  <div class="placeholder-img">👩‍🏫</div>
                 </div>
                 <div class="teacher-info">
                   <p class="name">{{ teacher.name }}</p>
-                  <p class="location">📍 {{ teacher.location }}</p>
-                  <p class="tags">{{ teacher.tags }}</p>
-                  <p class="wage">{{ teacher.wage.toLocaleString() }}원/시</p>
+                  <p class="location">📍 {{ teacher.location || teacher.regions || '지역 정보 없음' }}</p>
+                  <p class="tags">{{ teacher.activities || teacher.tags }}</p>
+                  <p class="wage">{{ formatPay(teacher.hourly_pay || teacher.wage) }}원/시</p>
                 </div>
               </div>
             </div>
@@ -69,18 +73,18 @@
 
 <script>
 import axios from 'axios';
-import BaseButton from '../components/BaseButton.vue'
-import TheHeader from '../components/TheHeader.vue'
+import BaseButton from '@/components/BaseButton.vue' 
+import TheHeader from '@/components/TheHeader.vue'
 
 export default {
   components: { BaseButton, TheHeader },
   data() {
     return {
       isLoggedIn: false,
+      isLoading: false, 
       userName: sessionStorage.getItem('userName') || '학부모',
-      
-      recommendedTeachers: [  ]
-  }
+      recommendedTeachers: []
+    }
   },
   async mounted() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -96,14 +100,14 @@ export default {
           sessionStorage.setItem('userName', this.userName);
         }
       } catch (e) {
-        console.warn("내 정보 로드 실패");
+        console.warn("내 정보 로드 실패 (토큰 만료 가능성)");
       }
     }
     await this.fetchRecommendedTeachers();
   },
-methods: {
+  methods: {
     async fetchRecommendedTeachers() {
-      this.isLoading = true;
+      this.isLoading = true; 
       try {
         const res = await axios.get('/api/search', {
            params: { sort_by: 'hourly_pay' }, 
@@ -116,12 +120,9 @@ methods: {
         this.isLoading = false;
       }
     },
-    formatActivities(activities) {
-      if (!activities) return '';
-      return activities.split(',').map(tag => `#${tag.trim()}`).join(' ');
-    },
     formatPay(pay) {
-      return pay ? Number(pay).toLocaleString() : '0';
+      if (!pay) return '0';
+      return Number(pay).toLocaleString();
     },
     logout() {
       if(confirm('로그아웃 하시겠습니까?')) {
